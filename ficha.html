@@ -1,0 +1,1975 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-ar">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ficha P3 —Alpha—</title>
+    <style>
+
+        /* Importação da Fonte com estilo de Terminal */
+        @import url('https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;700&display=swap');
+        
+        /* Impede o redimensionamento de todos os textareas da página */
+        textarea {
+            resize: none !important;
+        }
+
+        /* ==============================
+        Estilos do Editor de História
+        ============================== */
+
+        .text-toolbar {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 10px;
+        background: rgba(255, 255, 255, 0.05);
+        padding: 5px;
+        border-radius: 5px;
+        }
+
+        .text-toolbar button, .text-toolbar select {
+        background-color: #3E8CEC;
+        color: #000;
+        border: none;
+        border-radius: 3px;
+        padding: 5px 10px;
+        cursor: pointer;
+        font-family: 'Roboto Mono', monospace;
+        font-weight: bold;
+        transition: background-color 0.2s;
+        }
+
+        .text-toolbar button:hover, .text-toolbar select:hover {
+        background-color: #006920;
+        }
+            
+        .rich-text-area {
+            width: 98%;
+            height: 300px; 
+            background: rgba(255, 255, 255, 0.05);
+            color: #ffffff;
+            padding: 10px;
+            border: 1px solid transparent;
+            font-family: 'Roboto Mono', monospace;
+            border-radius: 5px;
+            overflow-y: auto; 
+            white-space: pre-wrap; /* Garante que a tabulação seja renderizada */
+            font-size: 14px;
+        }
+
+        .rich-text-area:focus {
+        outline: none;
+        border: 1px solid #3E8CEC;
+        }
+
+
+
+
+        /* --- ESTILOS BOTÕES DE HABILIDADES --- */
+
+        .skills-container {
+            display: flex;
+            justify-content: space-around;
+            gap: 20px;
+            padding: 10px 0;
+        }
+
+        .skills-column {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            width: 45%;
+        }
+
+        .skill-btn {
+            background-color: #00000069;
+            color: #ffffff; 
+            padding: 10px 15px; 
+            text-align: left;
+            font-family: 'Consolas', monospace;
+            cursor: pointer;
+            font-weight: bold; 
+            border: none;
+            border-radius: 3px; 
+            white-space: nowrap; 
+            overflow: hidden;
+            text-overflow: ellipsis;
+            transition: background-color 0.2s; 
+        }
+
+        .skill-btn:hover {
+            background-color: #006920; 
+            box-shadow: none; 
+        }
+
+
+
+        /* ============================
+            ESTILOS MODAL DE HABILIDADE
+        ============================ */
+
+        .skill-modal-overlay {
+            position: fixed;
+            z-index: 100;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #0d0d0d;
+            backdrop-filter: blur(5px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: opacity 0.2s ease;
+        }
+
+        .skill-modal-container {
+            width: 500px;
+            border: 2px solid #3E8CEC;
+            box-shadow: 0 0 40px rgba(62, 140, 236, 0.4);
+            border-radius: 8px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }       
+
+        .skill-modal-header h4 {
+            color: #3E8CEC;
+            margin: 0;
+            border-bottom: 1px solid #3E8CEC;
+            padding-bottom: 10px;
+        }
+
+        .skill-modal-footer {
+            text-align: right;
+        }
+
+        .skill-modal-footer .confirm-button {
+            background-color: #3E8CEC;
+            color: #000000;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 3px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .skill-modal-footer .confirm-button:hover {
+            background-color: #006920;
+        }
+       
+        .skill-modal-overlay .modal-content {
+            margin: 0; 
+        }
+
+        .skill-modal-overlay.hidden {
+           opacity: 0;
+            pointer-events: none;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        /* --- ESTILOS PARA OS CAMPOS DE INPUT NOS MODAIS --- */
+
+        .skill-modal-container input[type="text"],
+        .skill-modal-container textarea,
+        .image-manager-container input[type="text"] {
+            background: #0d0d0d;
+            color: #fff; 
+            border: 1px solid #3E8CEC; 
+            padding: 8px 10px;
+            border-radius: 4px;
+            width: 100%;
+            box-sizing: border-box; 
+            font-size: 0.9em;
+            font-family: 'Roboto Mono', monospace; 
+        }
+
+        .skill-modal-container input[type="text"]:focus,
+        .skill-modal-container textarea:focus,
+        .image-manager-container input[type="text"]:focus {
+            border-color: #ffcc00; 
+            outline: none; 
+            box-shadow: 0 0 5px rgba(255, 204, 0, 0.5);
+        }
+
+        .skill-modal-container textarea {
+            resize: vertical; 
+            min-height: 100px;
+        }   
+
+      
+        /* ESTILOS AFINIDADES */
+        .affinity-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            padding: 10px 0;
+        }
+
+        .affinity-group {
+            display: flex;
+            gap: 10px;
+            padding: 5px;
+            border-radius: 5px;
+            flex-direction: column;
+        }
+
+        .affinity-item-row {
+            display: flex;
+            gap: 10px; 
+            flex-wrap: wrap; 
+        }
+
+        .affinity-grid .attribute-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            cursor: pointer;
+            transition: background-color 0.1s;
+            padding: 5px 10px;
+            border-radius: 5px;
+            border: none;
+            padding: 0;
+        }
+
+        .affinity-grid .attribute-item:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .affinity-grid .attr-name {
+            font-weight: normal; 
+            font-size: 0.95em;
+            margin-bottom: 2px; 
+        }
+
+        .affinity-value {
+            transition: color 0.2s ease-in-out; 
+            font-weight: bold; 
+            margin-top: 0; 
+        }
+
+        .affinity-select {
+            background: transparent;
+            background-color: #1a1a1a;
+            color: #ffffff;
+            font-weight: normal;
+            border: none;
+            font-size: 1em;
+            font-family: 'Consolas', monospace;
+            font-weight: bold;
+            color: inherit;
+            appearance: none;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            text-align: center;
+            cursor: pointer;
+            padding: 2px;
+            min-width: 80px;
+            transition: color 0.2s ease-in-out;
+        }
+
+        .info-block h3 {
+            margin-top: 0;
+            padding-top: 0;
+        }
+
+        .affinity-value {
+            transition: color 0.2s ease-in-out; 
+            font-weight: bold;
+        }
+        .affinity-neutro { color: #ffffff; }
+        .affinity-fraco { color: #ff3333; }
+        .affinity-resiste { color: #3E8CEC; }
+        .affinity-nulo { color: #800080; }
+        .affinity-absorve { color: #66ff66; }
+        .affinity-reflete { color: #dff800; }
+
+        .affinity-grid .attribute-item {
+            cursor: pointer;
+            transition: background-color 0.1s;
+            padding: 2px 5px;
+            align-items: center;
+        }
+
+        /* Controles de Atributo (+/-) */
+        .attr-controls {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            flex-shrink: 0;
+        }
+        .attr-controls .editable-value {
+            text-align: center; 
+            min-width: 30px;
+            border-bottom: none; 
+        }
+        .attr-controls .editable-value:focus {
+            border-bottom: 1px solid #3E8CEC; 
+        }
+
+
+        /* Botões de + e - dos atributos */
+        .attr-btn {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            border: 1px solid #ffffff;
+            cursor: pointer;
+            font-size: 0.9em;
+            font-weight: bold;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: all 0.2s;
+        }
+
+        .plus-btn { background-color: #3E8CEC; color: #ffffff; }
+        .plus-btn:hover { background-color: #006920; }
+        .minus-btn { background-color: #3E8CEC; color: #ffffff; }
+        .minus-btn:hover { background-color: #006920; }
+
+        .attribute-item .attr-name { flex-grow: 1; }
+        .attribute-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 5px;
+            padding-right: 5px;
+        }
+        .attribute-item .attr-name { flex-grow: 1; }
+        .attribute-item .attr-value {
+            flex-shrink: 0;
+            min-width: 30px;
+            text-align: right;
+        }
+
+        [contenteditable="true"] {
+            display: inline-block;
+            padding: 2px 5px;
+            margin-left: 5px;
+            cursor: text;
+            border-bottom: 1px solid transparent;
+            transition: border-bottom 0.2s;
+            outline: none;
+        }
+        [contenteditable="true"]:focus {
+            border-bottom: 1px solid #3E8CEC;
+            background-color: rgba(62, 140, 236, 0.1);
+        }   
+
+        /* Estilos do Modal (Gerenciadora de Imagens) */
+        .image-modal-overlay {
+            position: fixed; top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            display: flex; justify-content: center; align-items: center;
+            z-index: 50;
+            transition: opacity 0.3s ease-out;
+        }
+        .image-manager-container {
+            width: 600px; height: 450px;
+            background: #0d0d0d;
+            border: 2px solid #3E8CEC;
+            box-shadow: 0 0 40px rgba(62, 140, 236, 0.4);
+            border-radius: 5px;
+            padding: 20px;
+            display: flex; flex-direction: column;
+            position: relative;
+        }
+        .manager-header {
+            display: flex; gap: 10px;
+            position: absolute; top: -15px; left: -15px;
+            z-index: 60;
+        }
+        .action-button {
+            width: 30px; height: 30px;
+            border-radius: 50%;
+            border: 2px solid #ffffff;
+            font-size: 1.5em; font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.2s, color 0.2s;
+        }
+        .add-button { background-color: #3E8CEC; color: #ffffff; }
+        .add-button:hover { background-color: #006920; }
+        .remove-button { background-color: #3E8CEC; color: #ffffff; }
+        .remove-button:hover { background-color: #006920; }
+
+        .image-list-display {
+            flex-grow: 1;
+            border: 1px solid rgba(62, 140, 236, 0.5);
+            margin: 15px 0 15px 0;
+            padding: 10px;
+            overflow-y: auto;
+            display: flex; flex-wrap: wrap;
+            gap: 15px;
+            align-content: flex-start;
+        }
+
+        .image-preview-item {
+            width: 100px; height: 100px;
+            border: 1px solid transparent;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: border 0.2s;
+            box-sizing: border-box;
+        }
+        .image-preview-item:hover { border-color: #3E8CEC; }
+        .image-preview-item.selected {
+            border: 3px solid #3E8CEC;
+            box-shadow: 0 0 10px rgba(62, 140, 236, 0.7);
+        }
+        .image-preview-item img {
+            width: 100%; height: 100%;
+            border-radius: 50%;
+            object-fit: cover;
+            display: block;
+        }
+
+        .manager-footer { text-align: center; }
+        .confirm-button {
+            padding: 10px 20px;
+            background-color: #3E8CEC;
+            color: #ffffff;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background-color 0.2s, color 0.2s;           
+        }
+        .confirm-button:hover { background-color: #006920; }
+        .manager-footer { display: flex; justify-content: center; gap: 15px; }
+        
+        /* Estilos do Dropdown */
+        .image-placeholder { position: relative !important; }
+        .image-click-area { 
+            position: absolute; top: 0; left: 0;
+            width: 100%; height: 100%;
+            cursor: pointer; z-index: 1; 
+        }
+        .image-dropdown {
+            position: absolute;
+            top: 100%; left: 0;
+            background-color: #00000077;
+            border: none;
+            min-width: 200px;
+            box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.4);
+            display: flex; flex-direction: column;
+        }
+        .image-dropdown a {
+            color: #ffffff; padding: 12px 16px;
+            text-decoration: none; display: block;
+            font-size: 0.9em;
+            transition: background-color 0.2s;
+        }
+        .image-dropdown a:hover { background-color: #006920; color: #000000; }
+      
+        /* Layouts de Página */
+        .person-layout { display: flex; gap: 30px; margin-bottom: 30px; align-items: flex-start; }
+        .image-placeholder {
+            position: relative; /* <-- ADICIONE ESTA LINHA */
+            width: 200px; height: 200px;
+            background-color: rgba(45, 126, 226, 0.247);
+            border-radius: 5px; 
+            flex-shrink: 0; 
+            display: flex; align-items: center; justify-content: center;
+            background-size: cover; background-position: center;
+        }
+        .identity-block { flex-grow: 1; padding: 20px; background-color: rgba(255, 255, 255, 0.05); border-radius: 5px; }
+        .identity-block p { margin-top: 0.5em; margin-bottom: 0.5em; }
+        .description-block { padding: 20px; background-color: rgba(255, 255, 255, 0.05); border-radius: 5px; }
+        .info-block h3 {
+            color: #ffffff; font-size: 1.2em;
+            border-bottom: 1px; padding-bottom: 5px;
+            margin-top: 0; margin-bottom: 15px;
+        }
+
+        /* Estilos Globais */
+        body {
+            font-family: 'Roboto Mono', monospace; 
+            background-color: #000000; color: #ffffff;
+            margin: 0; padding: 0;
+            position: relative; display: flex;
+            justify-content: center; align-items: center;
+            min-height: 100vh;
+        }
+        .video-background { position: fixed; top: 0; left: 0; width: 100%; height: 100%; overflow: hidden; z-index: -1; }
+        #bg-video {
+            min-width: 100%; min-height: 100%;
+            width: auto; height: auto;
+            position: absolute; top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            object-fit: cover; 
+            filter: brightness(0.6);
+        }
+
+        /* Container Principal */
+        .p3r-menu-container {
+            width: 90%; max-width: 1200px;
+            height: 80vh; display: flex;
+            background: rgba(0, 0, 0, 0.8); 
+            border-radius: 5%;
+            opacity: 0; transform: scale(0.95);
+            transition: opacity 0.5s ease-out, transform 0.5s ease-out;
+            pointer-events: none;
+        }
+        .p3r-menu-container.visible { opacity: 1; transform: scale(1); pointer-events: all; }
+        
+        /* Menu Inicial */
+        #main-menu {
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            gap: 20px; padding: 40px;
+            border-radius: 10px; z-index: 10;
+            transition: opacity 0.5s ease-in, transform 0.5s ease-in;
+        }
+        .main-menu-button {
+            padding: 15px 40px; cursor: pointer;
+            font-size: 1.5em; text-transform: uppercase;
+            letter-spacing: 4px; color: #ffffff;
+            background-color: transparent; border-radius: 5px;
+            transition: all 0.3s ease;
+            width: 300px; text-align: center;
+        }
+        .main-menu-button:hover { color: #00e1ff; text-shadow: 0 0 15px #3E8CEC; }
+        .hidden { display: none !important; }
+        
+        /* Painel Lateral */
+        .tab-panel { width: 300px; padding: 20px 0; display: flex; flex-direction: column; }
+        .menu-title { text-align: center; padding: 10px 0 30px; font-size: 1.5em; letter-spacing: 3px; color: #ffffff; }
+        .tab-button {
+            padding: 15px 30px; cursor: pointer;
+            font-size: 1.1em; text-transform: uppercase;
+            letter-spacing: 2px;
+            border-left: 5px solid transparent;
+            transition: all 0.2s ease;
+        }
+        .tab-button:hover { color: #00fff2; }
+        .tab-button.active { color: #000000; background-color: #3E8CEC; font-weight: bold; }
+
+        /* Painel de Conteúdo */
+        .content-panel { flex-grow: 1; padding: 30px; overflow-y: auto; position: relative; }
+        .display-panel { display: none; height: 100%; animation: fade-in 0.3s ease-in-out; }
+        @keyframes fade-in {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        h2 { font-size: 1.8em; padding-bottom: 5px; margin-bottom: 25px; letter-spacing: 2px; }
+        .content-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; }
+        .info-block { background-color: rgba(255, 255, 255, 0.05); padding: 20px; border-radius: 5px; border: 1px; }
+        .info-block h3 { color: #ffffff; font-size: 1.2em; border-bottom: 1px; padding-bottom: 5px; margin-top: 0; margin-bottom: 15px; }
+        .attr-value { color: #3E8CEC; font-weight: bold; }
+        .notes { margin-top: 15px; font-size: 0.8em; color: #aaa; border-top: 1px; padding-top: 10px; }
+
+        /* Utilitários */
+        .rich-text-area:empty::before { content: '\200B'; }
+        
+        /* Redimensionador de Imagem */
+        #image-resizer {
+            position: absolute; border: 2px dashed #3E8CEC;
+            z-index: 10; box-sizing: border-box;
+        }
+        .resize-handle {
+            position: absolute; width: 10px; height: 10px;
+            background-color: #ffffff; border: 1px solid #000000;
+            border-radius: 2px; z-index: 11;
+        }
+        .resize-handle.top-left { top: -6px; left: -6px; cursor: nwse-resize; }
+        .resize-handle.top-right { top: -6px; right: -6px; cursor: nesw-resize; }
+        .resize-handle.bottom-left { bottom: -6px; left: -6px; cursor: nesw-resize; }
+        .resize-handle.bottom-right { bottom: -6px; right: -6px; cursor: nwse-resize; }
+        #history-editor img { cursor: pointer; }
+
+        /* Ícone de Arcana */
+        .arcana-field-container { display: flex; align-items: center; gap: 10px; margin-top: 1em; }
+        .arcana-icon {
+            position: relative; /* <-- ADICIONE ESTA LINHA */
+            width: 50px; height: 70px;
+            background-color: rgba(255, 255, 255, 0.05);
+            border-radius: 5px; cursor: pointer;
+            transition: border-color 0.2s;
+            background-size: contain; background-position: center; background-repeat: no-repeat;
+        }
+        .arcana-icon:hover { border-color: #3E8CEC; }
+
+        /* =================================
+           Estilos dos Tooltips de Ajuda (?)
+        ================================= */
+        .header-with-tooltip {
+            display: flex;
+            align-items: center;
+            gap: 10px; /* Espaço entre o título e o ícone '?' */
+        }
+        .tooltip-icon {
+            position: relative; /* Âncora para o texto do tooltip */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 20px;
+            height: 20px;
+            background-color: rgba(255, 255, 255, 0.1);
+            color: #fff;
+            border-radius: 50%;
+            cursor: help; /* Muda o cursor para indicar ajuda */
+            font-size: 0.8em;
+            font-weight: bold;
+        }
+        .tooltip-text {
+            visibility: hidden; /* Escondido por padrão */
+            opacity: 0;
+            width: 280px; /* Largura da caixa de dica */
+            background-color: #1a1a1a;
+            color: #fff;
+            text-align: left;
+            font-weight: normal;
+            font-size: 0.9em;
+            padding: 15px;
+            border-radius: 6px;
+            border: 1px solid #3E8CEC;
+            
+            /* Posicionamento */
+            position: absolute;
+            z-index: 10;
+            bottom: 150%; /* Posiciona acima do ícone '?' */
+            left: 50%;
+            margin-left: -140px; /* Metade da largura para centralizar */
+            
+            transition: opacity 0.3s;
+        }
+        .tooltip-icon:hover .tooltip-text {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        /* =================================
+           Ajustes de Layout
+        ================================= */
+        .level-field {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* =================================
+        Contêiner do Editor de Texto
+        ================================= */
+        .editor-wrapper {
+            position: relative; /* Torna-se a âncora para o posicionamento do redimensionador */
+            overflow: hidden;   /* CORTA/ESCONDE qualquer parte do redimensionador que transbordar */
+        }
+        
+
+        /* =================================
+        Estilização Consistente para Textareas
+        ================================= */
+        textarea {
+            width: 98%;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid transparent; /* Borda padrão transparente */
+            color: #ffffff;
+            font-family: 'Roboto Mono', monospace;
+            border-radius: 5px; /* Adicionado para consistência */
+            transition: border-color 0.2s; /* Transição suave */
+        }
+
+        textarea:focus {
+            outline: none; /* Remove o contorno branco padrão */
+            border: 1px solid #3E8CEC; /* Adiciona a borda azul no foco */
+        }
+
+        /* =================================
+        Estilos do Container de HP e SP
+        ================================= */
+
+        .hp-sp-container {
+            display: flex;
+            gap: 25px; /* Adiciona um espaço entre os campos HP e SP */
+            margin-top: 1em;
+        }
+
+        .hp-sp-container p {
+            margin: 0; /* Remove a margem padrão dos parágrafos para melhor alinhamento */
+        }
+
+
+    </style>
+
+<script src="https://cdn.jsdelivr.net/npm/pocketbase@latest/dist/pocketbase.umd.js"></script>
+    
+</head>
+<body>
+
+<div class="video-background">
+    <video autoplay muted id="bg-video" onended="restartVideoLoop()">
+        <source src="video.mp4" type="video/mp4">
+        Seu navegador não suporta a tag de vídeo.
+    </video>
+</div>
+
+<div id="main-menu">
+    <div class="menu-title" style="font-size: 2.2em; color: #ffffff; margin-bottom: 40px;">PERSONA 3 —ALPHA—</div>
+    <div class="main-menu-button" onclick="openP3RMenu('personagem')">Personagem</div>
+    <div class="main-menu-button" onclick="openP3RMenu('atributos')">Atributos</div>
+    <div class="main-menu-button" onclick="openP3RMenu('persona')">Persona</div>
+    <div class="main-menu-button" onclick="openP3RMenu('verso')">Verso</div>
+</div>
+<div class="p3r-menu-container hidden" id="p3r-ficha">
+
+    <div class="tab-panel">
+        <div class="menu-title"></div>
+        
+        <div class="tab-button" onclick="showPanel('personagem', this)">Personagem</div>
+        <div class="tab-button" onclick="showPanel('atributos', this)">Atributos</div>
+        <div class="tab-button" onclick="showPanel('persona', this)">Persona</div>
+        <div class="tab-button" onclick="showPanel('verso', this)">Verso</div>
+        
+        <div class="tab-button" style="margin-top: auto;" onclick="closeP3RMenu()">Voltar</div>
+    </div>
+
+    <div class="content-panel">
+        
+        <div id="personagem" class="display-panel">
+            <h2>DADOS DO MEMBRO S.E.E.S.</h2>
+            
+            <div class="person-layout">
+
+                <div class="image-placeholder" id="character-image-placeholder">
+                    <div class="image-click-area" onclick="toggleImageDropdown(event, 'character-image-dropdown-menu')"></div>
+                    <div class="image-dropdown hidden" id="character-image-dropdown-menu">
+                        <a href="#" onclick="openImageManager(event, 'character-image-placeholder')">Abrir Gerenciador de Imagens</a>
+                    </div>
+                </div>
+
+                <div class="identity-block">
+                    <h3>Identidade</h3>
+                    <p><strong>Nome:</strong> <span id="char-name" contenteditable="true" data-field="nome_personagem">Makoto Yuki</span></p>
+                    <p><strong>Sexo:</strong> <span id="char-sex" contenteditable="true" data-field="sexo">Masculino</span></p>
+                    <p><strong>Idade:</strong> <span id="char-age" contenteditable="true" data-field="idade">16</span></p>                 
+                </div>
+            </div>
+
+            <div class="description-block">
+                <h3>Descrição</h3>
+                <textarea style="min-height: 150px;" data-field="descricao"></textarea>
+            </div>
+        </div>
+
+        <div id="atributos" class="display-panel">
+            <h2>ATRIBUTOS</h2>
+    
+            <div class="content-grid" style="grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
+                
+                <div class="info-block" style="grid-column: span 2;">
+                    <h3>DADOS BASE</h3>
+                    <p class="level-field">
+                        <strong>Nível:</strong> 
+                        <span id="char-level" contenteditable="true" class="attr-value" data-field="nivel">01</span>
+                    </p>
+
+                    <div class="hp-sp-container">
+                        <p><strong>HP:</strong> <span id="hp-value" class="attr-value">0</span></p>
+                        <p><strong>SP:</strong> <span id="sp-value" class="attr-value">0</span></p>
+                    </div>
+                </div>
+    
+                <div class="info-block">
+                    <h3 class="header-with-tooltip">
+                        <span>COMBATE</span>
+                        <span class="tooltip-icon">?
+                            <span class="tooltip-text" style="width: 240px; margin-left: -120px;">
+                                (Valor mínimo 01. Nível 1 permite um máximo de 25 pontos totais.)
+                            </span>
+                        </span>
+                    </h3>
+    
+                    <div class="attribute-item" id="for-attr">
+                        <span class="attr-name">Força (FOR)</span>
+                        <div class="attr-controls">
+                            <button class="attr-btn minus-btn" data-attr="for" onclick="changeAttribute('for', -1)">-</button>
+                            <span id="attr-for" class="attr-value editable-value" contenteditable="true" data-field="forca">01</span>
+                            <button class="attr-btn plus-btn" data-attr="for" onclick="changeAttribute('for', 1)">+</button>
+                        </div>
+                    </div>
+    
+                    <div class="attribute-item" id="mag-attr">
+                        <span class="attr-name">Magia (MAG)</span>
+                        <div class="attr-controls">
+                            <button class="attr-btn minus-btn" data-attr="mag" onclick="changeAttribute('mag', -1)">-</button>
+                            <span id="attr-mag" class="attr-value editable-value" contenteditable="true" data-field="magia">01</span>
+                            <button class="attr-btn plus-btn" data-attr="mag" onclick="changeAttribute('mag', 1)">+</button>
+                        </div>
+                    </div>
+    
+                    <div class="attribute-item" id="con-attr">
+                        <span class="attr-name">Constituição (CON)</span>
+                        <div class="attr-controls">
+                            <button class="attr-btn minus-btn" data-attr="con" onclick="changeAttribute('con', -1)">-</button>
+                            <span id="attr-con" class="attr-value editable-value" contenteditable="true" data-field="constituicao">01</span>
+                            <button class="attr-btn plus-btn" data-attr="con" onclick="changeAttribute('con', 1)">+</button>
+                        </div>
+                    </div>
+    
+                    <div class="attribute-item" id="agl-attr">
+                        <span class="attr-name">Agilidade (AGL)</span>
+                        <div class="attr-controls">
+                            <button class="attr-btn minus-btn" data-attr="agl" onclick="changeAttribute('agl', -1)">-</button>
+                            <span id="attr-agl" class="attr-value editable-value" contenteditable="true" data-field="agilidade">01</span>
+                            <button class="attr-btn plus-btn" data-attr="agl" onclick="changeAttribute('agl', 1)">+</button>
+                        </div>
+                    </div>
+    
+                    <div class="attribute-item" id="srt-attr">
+                        <span class="attr-name">Sorte (SRT)</span>
+                        <div class="attr-controls">
+                            <button class="attr-btn minus-btn" data-attr="srt" onclick="changeAttribute('srt', -1)">-</button>
+                            <span id="attr-srt" class="attr-value editable-value" contenteditable="true" data-field="sorte">01</span>
+                            <button class="attr-btn plus-btn" data-attr="srt" onclick="changeAttribute('srt', 1)">+</button>
+                        </div>
+                    </div>
+                    
+                    <div class="notes" style="margin-top: 15px;">
+                        <span id="total-points-display" style="font-size: 1em; color: rgb(62, 140, 236); font-weight: bold;">
+                            Total Distribuído: 05
+                        </span>
+                    </div>
+                </div>
+
+                <div class="info-block">
+                    <h3>SOCIAL</h3>
+                    
+                    <div class="attribute-item" id="carisma-attr">
+                        <span class="attr-name">Carisma</span>
+                        <div class="attr-controls">
+                            <button class="attr-btn minus-btn" data-attr="carisma" onclick="changeAttribute('carisma', -1, true)">-</button>
+                            <span id="attr-carisma" class="attr-value editable-value" contenteditable="true" data-field="carisma">0</span>
+                            <button class="attr-btn plus-btn" data-attr="carisma" onclick="changeAttribute('carisma', 1, true)">+</button>
+                        </div>
+                    </div>
+    
+                    <div class="attribute-item" id="inteligencia-attr">
+                        <span class="attr-name">Inteligência</span>
+                        <div class="attr-controls">
+                            <button class="attr-btn minus-btn" data-attr="inteligencia" onclick="changeAttribute('inteligencia', -1, true)">-</button>
+                            <span id="attr-inteligencia" class="attr-value editable-value" contenteditable="true" data-field="inteligencia">0</span>
+                            <button class="attr-btn plus-btn" data-attr="inteligencia" onclick="changeAttribute('inteligencia', 1, true)">+</button>
+                        </div>
+                    </div>
+    
+                    <div class="attribute-item" id="coragem-attr">
+                        <span class="attr-name">Coragem</span>
+                        <div class="attr-controls">
+                            <button class="attr-btn minus-btn" data-attr="coragem" onclick="changeAttribute('coragem', -1, true)">-</button>
+                            <span id="attr-coragem" class="attr-value editable-value" contenteditable="true" data-field="coragem">0</span>
+                            <button class="attr-btn plus-btn" data-attr="coragem" onclick="changeAttribute('coragem', 1, true)">+</button>
+                        </div>
+                    </div>
+                </div> 
+            </div> 
+        </div> 
+
+        <div id="persona" class="display-panel">
+            <h2><span id="persona-title-name">NOME DO SEU PERSONA</span></h2>
+
+            <div class="person-layout">
+
+                <div id="persona-image-placeholder" class="image-placeholder" data-field="persona_imagem_url">
+                    <div class="image-click-area" onclick="toggleImageDropdown(event, 'persona-image-dropdown-menu')"></div>
+                    <div class="image-dropdown hidden" id="persona-image-dropdown-menu">
+                        <a href="#" onclick="openImageManager(event, 'persona-image-placeholder')">Abrir Gerenciador de Imagens</a>
+                    </div>
+                </div>
+
+                <div class="identity-block">
+                    <p>
+                        <strong>Nome:</strong> 
+                        <span id="persona-name-input" contenteditable="true" data-field="persona_nome" onblur="updatePersonaTitle()">ORPHEUS</span>
+                    </p>
+                    <div class="arcana-field-container">
+                        <strong>Arcana:</strong>
+
+                        <div id="arcana-icon-placeholder" class="arcana-icon" data-field="arcana_imagem_url">
+                            <div class="image-click-area" onclick="toggleImageDropdown(event, 'arcana-image-dropdown-menu')"></div>
+                            <div class="image-dropdown hidden" id="arcana-image-dropdown-menu">
+                                <a href="#" onclick="openImageManager(event, 'arcana-icon-placeholder')">Abrir Gerenciador de Imagens</a>
+                            </div>
+                        </div>
+
+                        <span id="arcana-name" contenteditable="true" data-field="arcana_nome">The Fool</span>
+                    </div>
+                </div>
+
+            </div> 
+            
+            <div class="info-block" style="margin-top: 20px;">
+                <h3>AFINIDADES</h3>
+                <div class="affinity-grid">
+                    <div class="affinity-group">
+                        <h4 style="margin: 0 0 5px 0; color: #ffb347;">Físico</h4>
+                        <div class="affinity-item-row">
+                            <div class="attribute-item">
+                                <span class="attr-name">Corte</span>
+                                <select id="affinity-corte" class="affinity-select affinity-neutro" data-field="afinidade_corte" onchange="changeAffinity('corte', this.value)">
+                                    <option value="Neutro">Neutro</option>
+                                    <option value="Fraco">Fraco</option>
+                                    <option value="Resiste">Resiste</option>
+                                    <option value="Nulo">Nulo</option>
+                                    <option value="Absorve">Absorve</option>
+                                    <option value="Reflete">Reflete</option>
+                                </select>
+                            </div>
+                            <div class="attribute-item">
+                                <span class="attr-name">Contundente</span>
+                                <select id="affinity-contundente" class="affinity-select affinity-neutro" data-field="afinidade_contundente" onchange="changeAffinity('contundente', this.value)">
+                                    <option value="Neutro">Neutro</option>
+                                    <option value="Fraco">Fraco</option>
+                                    <option value="Resiste">Resiste</option>
+                                    <option value="Nulo">Nulo</option>
+                                    <option value="Absorve">Absorve</option>
+                                    <option value="Reflete">Reflete</option>
+                                </select>
+                            </div>
+                            <div class="attribute-item">
+                                <span class="attr-name">Perfuração</span>
+                                <select id="affinity-perfuracao" class="affinity-select affinity-neutro" data-field="afinidade_perfuracao" onchange="changeAffinity('perfuracao', this.value)">
+                                    <option value="Neutro">Neutro</option>
+                                    <option value="Fraco">Fraco</option>
+                                    <option value="Resiste">Resiste</option>
+                                    <option value="Nulo">Nulo</option>
+                                    <option value="Absorve">Absorve</option>
+                                    <option value="Reflete">Reflete</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="affinity-group">
+                        <h4 style="margin: 0 0 5px 0; color: #ffb347;">Mágico</h4>
+                        <div class="affinity-item-row">
+                            <div class="attribute-item">
+                                <span class="attr-name">Fogo</span>
+                                <select id="affinity-fogo" class="affinity-select affinity-neutro" data-field="afinidade_fogo" onchange="changeAffinity('fogo', this.value)">
+                                    <option value="Neutro">Neutro</option>
+                                    <option value="Fraco">Fraco</option>
+                                    <option value="Resiste">Resiste</option>
+                                    <option value="Nulo">Nulo</option>
+                                    <option value="Absorve">Absorve</option>
+                                    <option value="Reflete">Reflete</option>
+                                </select>
+                            </div>
+                            <div class="attribute-item">
+                                <span class="attr-name">Gelo</span>
+                                <select id="affinity-gelo" class="affinity-select affinity-neutro" data-field="afinidade_gelo" onchange="changeAffinity('gelo', this.value)">
+                                    <option value="Neutro">Neutro</option>
+                                    <option value="Fraco">Fraco</option>
+                                    <option value="Resiste">Resiste</option>
+                                    <option value="Nulo">Nulo</option>
+                                    <option value="Absorve">Absorve</option>
+                                    <option value="Reflete">Reflete</option>
+                                </select>
+                            </div>
+                            <div class="attribute-item">
+                                <span class="attr-name">Vento</span>
+                                <select id="affinity-vento" class="affinity-select affinity-neutro" data-field="afinidade_vento" onchange="changeAffinity('vento', this.value)">
+                                    <option value="Neutro">Neutro</option>
+                                    <option value="Fraco">Fraco</option>
+                                    <option value="Resiste">Resiste</option>
+                                    <option value="Nulo">Nulo</option>
+                                    <option value="Absorve">Absorve</option>
+                                    <option value="Reflete">Reflete</option>
+                                </select>
+                            </div>
+                            <div class="attribute-item">
+                                <span class="attr-name">Elétrico</span>
+                                <select id="affinity-eletrico" class="affinity-select affinity-neutro" data-field="afinidade_eletrico" onchange="changeAffinity('eletrico', this.value)">
+                                    <option value="Neutro">Neutro</option>
+                                    <option value="Fraco">Fraco</option>
+                                    <option value="Resiste">Resiste</option>
+                                    <option value="Nulo">Nulo</option>
+                                    <option value="Absorve">Absorve</option>
+                                    <option value="Reflete">Reflete</option>
+                                </select>
+                            </div>
+                            <div class="attribute-item">
+                                <span class="attr-name">Luz</span>
+                                <select id="affinity-luz" class="affinity-select affinity-neutro" data-field="afinidade_luz" onchange="changeAffinity('luz', this.value)">
+                                    <option value="Neutro">Neutro</option>
+                                    <option value="Fraco">Fraco</option>
+                                    <option value="Resiste">Resiste</option>
+                                    <option value="Nulo">Nulo</option>
+                                    <option value="Absorve">Absorve</option>
+                                    <option value="Reflete">Reflete</option>
+                                </select>
+                            </div>
+                            <div class="attribute-item">
+                                <span class="attr-name">Escuridão</span>
+                                <select id="affinity-escuridao" class="affinity-select affinity-neutro" data-field="afinidade_escuridao" onchange="changeAffinity('escuridao', this.value)">
+                                    <option value="Neutro">Neutro</option>
+                                    <option value="Fraco">Fraco</option>
+                                    <option value="Resiste">Resiste</option>
+                                    <option value="Nulo">Nulo</option>
+                                    <option value="Absorve">Absorve</option>
+                                    <option value="Reflete">Reflete</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="info-block" style="margin-top: 20px;">
+                <h3>HABILIDADES</h3>
+                <div class="skills-container">
+                    <div class="skills-column">
+                        <button class="skill-btn" id="skill-btn-1" onclick="openSkillModal(1)">Habilidade 1</button>
+                        <button class="skill-btn" id="skill-btn-2" onclick="openSkillModal(2)">Habilidade 2</button>
+                        <button class="skill-btn" id="skill-btn-3" onclick="openSkillModal(3)">Habilidade 3</button>
+                        <button class="skill-btn" id="skill-btn-4" onclick="openSkillModal(4)">Habilidade 4</button>
+                    </div>
+                    <div class="skills-column">
+                        <button class="skill-btn" id="skill-btn-5" onclick="openSkillModal(5)">Habilidade 5</button>
+                        <button class="skill-btn" id="skill-btn-6" onclick="openSkillModal(6)">Habilidade 6</button>
+                        <button class="skill-btn" id="skill-btn-7" onclick="openSkillModal(7)">Habilidade 7</button>
+                        <button class="skill-btn" id="skill-btn-8" onclick="openSkillModal(8)">Habilidade 8</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div id="verso" class="display-panel">
+            <h2>HISTÓRIA E ANOTAÇÕES</h2>
+            
+            <h3>HISTÓRIA</h3>
+
+            <div class="text-toolbar">
+                <button onclick="toggleStyle('bold')" title="Negrito"><b>B</b></button>
+                <button onclick="toggleStyle('italic')" title="Itálico"><i>I</i></button>
+                <button onclick="toggleStyle('underline')" title="Sublinhar"><u>U</u></button>
+                <button onclick="addImage()" title="Adicionar Imagem">🖼️</button> 
+                <input type="number" id="font-size-input" value="14" min="8" max="72" style="width: 60px; text-align: center; background-color: #333; color: #fff; border: 1px solid #3E8CEC; border-radius: 3px;">
+            </div>
+
+            <div class="editor-wrapper">
+                <div id="history-editor" class="rich-text-area" contenteditable="true" data-field="historia"></div>
+                
+                <div id="image-resizer" style="display: none;">
+                    <div class="resize-handle top-left"></div>
+                    <div class="resize-handle top-right"></div>
+                    <div class="resize-handle bottom-left"></div>
+                    <div class="resize-handle bottom-right"></div>
+                </div>
+            </div>
+            
+            <h3>ANOTAÇÕES</h3>
+            <textarea style="min-height: 100px;" data-field="anotacoes"></textarea>
+        </div>
+    </div>
+</div>
+
+
+<div id="image-manager-modal" class="image-modal-overlay hidden" onclick="if (event.target.id === 'image-manager-modal') closeImageManager();">
+    <div class="image-manager-container">
+        <div class="manager-header">
+            <button class="action-button add-button" onclick="promptForImageURL()">
+                +
+            </button>
+            <button class="action-button remove-button" onclick="removeSelectedImage()">
+                -
+            </button>
+        </div>
+        
+        <div class="image-list-display" id="image-list-display">
+            <p style="color: #aaa; text-align: center; margin-top: 50px;">Nenhuma imagem adicionada.</p>
+        </div>
+        
+        <div class="manager-footer">
+            <button class="confirm-button" onclick="confirmImageSelection()">Usar Selecionada</button>
+            <button class="confirm-button" onclick="removeImageFromPlaceholder()">Remover Imagem</button>
+        </div>
+    </div>
+</div>
+
+<div id="skill-modal" class="skill-modal-overlay hidden" onclick="closeSkillModalOnOutsideClick(event)">
+    <div class="skill-modal-container">
+        <div class="skill-modal-header">
+            <h4>Editar Habilidade <span id="current-skill-number"></span></h4>
+        </div>
+
+        <input type="hidden" id="current-skill-id">
+
+        <div class="modal-input-group">
+            <label for="skill-name">Habilidade</label>
+            <input type="text" id="skill-name">
+        </div>
+
+        <div class="modal-input-group">
+            <label for="skill-type">Tipo</label>
+            <input type="text" id="skill-type">
+        </div>
+
+        <div class="modal-input-group full-width">
+            <label for="skill-description">Descrição</label>
+            <textarea id="skill-description"></textarea>
+        </div>
+
+        <div class="skill-modal-footer">
+            <button class="confirm-button" onclick="saveAndCloseSkillModal()">Salvar e Fechar</button>
+        </div>
+    </div>
+</div>
+
+
+
+<script>
+    
+// ===================================================================
+//   INÍCIO DO SCRIPT - COM A CORREÇÃO DEFINITIVA DO REDIMENSIONADOR
+// ===================================================================
+
+// --- ELEMENTOS GLOBAIS E VARIÁVEIS COMUNS ---
+const editor = document.getElementById('history-editor');
+const fontSizeInput = document.getElementById('font-size-input');
+const imageResizer = document.getElementById('image-resizer'); // MOVIDO PARA O TOPO
+let targetImage = null; // MOVIDO PARA O TOPO
+
+
+// --- DADOS E LÓGICA DAS HABILIDADES (AINDA NÃO CONECTADO AO POCKETBASE) ---
+let skillData = {
+    'skill-1': { name: 'Habilidade 1', type: '', description: '' },
+    'skill-2': { name: 'Habilidade 2', type: '', description: '' },
+    'skill-3': { name: 'Habilidade 3', type: '', description: '' },
+    'skill-4': { name: 'Habilidade 4', type: '', description: '' },
+    'skill-5': { name: 'Habilidade 5', type: '', description: '' },
+    'skill-6': { name: 'Habilidade 6', type: '', description: '' },
+    'skill-7': { name: 'Habilidade 7', type: '', description: '' },
+    'skill-8': { name: 'Habilidade 8', type: '', description: '' }
+};
+let activeSkillId = null; 
+
+function openSkillModal(skillNumber) {
+    activeSkillId = `skill-${skillNumber}`;
+    const data = skillData[activeSkillId];
+    document.getElementById('current-skill-number').textContent = skillNumber;
+    document.getElementById('current-skill-id').value = activeSkillId;
+    document.getElementById('skill-name').value = data.name;
+    document.getElementById('skill-type').value = data.type;
+    document.getElementById('skill-description').value = data.description;
+    const modal = document.getElementById('skill-modal');
+    modal.classList.remove('hidden');
+    setTimeout(() => modal.style.opacity = '1', 10);
+}
+
+function closeSkillModal(saveChanges = true) {
+    if (activeSkillId && saveChanges) {
+        skillData[activeSkillId].name = document.getElementById('skill-name').value.trim();
+        skillData[activeSkillId].type = document.getElementById('skill-type').value.trim();
+        skillData[activeSkillId].description = document.getElementById('skill-description').value.trim();
+        updateSkillButtonName(skillData[activeSkillId].name, activeSkillId); 
+    }
+    activeSkillId = null;
+    const modal = document.getElementById('skill-modal');
+    if (modal) {
+        modal.classList.add('hidden');
+    }
+}
+
+function closeSkillModalOnOutsideClick(event) {
+    if (event.target === document.getElementById('skill-modal')) {
+        closeSkillModal(false);
+    }
+}
+
+function saveAndCloseSkillModal() {
+    closeSkillModal(true); 
+    triggerSave(); // Aciona o salvamento automático
+}
+
+function updateSkillButtonName(newName, skillIdToUpdate) {
+    if (skillIdToUpdate) {
+        const button = document.getElementById(`skill-btn-${skillIdToUpdate.split('-')[1]}`);
+        button.textContent = newName.trim() === '' ? `Habilidade ${skillIdToUpdate.split('-')[1]}` : newName;
+    }
+}
+
+
+// --- LÓGICA DA PERSONA E AFINIDADES ---
+const AFFINITY_CLASS_MAP = {
+    'Neutro': 'affinity-neutro', 'Fraco': 'affinity-fraco', 'Resiste': 'affinity-resiste',
+    'Nulo': 'affinity-nulo', 'Absorve': 'affinity-absorve', 'Reflete': 'affinity-reflete'
+};
+
+function changeAffinity(elementKey, newValue) {
+    const affinitySelect = document.getElementById(`affinity-${elementKey}`);
+    if (!affinitySelect) return;
+    
+    Object.values(AFFINITY_CLASS_MAP).forEach(className => affinitySelect.classList.remove(className));
+    
+    const newClass = AFFINITY_CLASS_MAP[newValue];
+    if (newClass) {
+        affinitySelect.classList.add(newClass);
+    }
+}
+
+
+function updatePersonaTitle() {
+    const nameInput = document.getElementById('persona-name-input');
+    const titleDisplay = document.getElementById('persona-title-name');
+    if (nameInput && titleDisplay) {
+        titleDisplay.textContent = nameInput.textContent.trim() || 'Sem Nome';
+    }
+}
+
+
+// --- LÓGICA DE ATRIBUTOS (COM VALIDAÇÃO E LIMITES) ---
+
+function filterNumericInput(event) {
+    const allowedKeys = ['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'Tab'];
+    if (event.ctrlKey && ['a', 'c', 'v', 'x'].includes(event.key.toLowerCase())) {
+        return;
+    }
+    if (isNaN(parseInt(event.key)) && !allowedKeys.includes(event.key)) {
+        event.preventDefault();
+    }
+    if (event.key === 'Enter' || (event.shiftKey && event.key === 'Enter')) {
+        event.preventDefault();
+    }
+}
+
+function validateLevel() {
+    const levelElement = document.getElementById('char-level');
+    let value = parseInt(levelElement.textContent.trim()) || 1;
+    value = Math.max(1, Math.min(99, value));
+    levelElement.textContent = String(value).padStart(2, '0');
+    updateTotalPoints();
+    updateHpSp(); // <-- ADICIONE ESTA LINHA
+}
+
+function validateSocialPoints() {
+    const attributeIDs = ['attr-carisma', 'attr-inteligencia', 'attr-coragem'];
+    attributeIDs.forEach(id => {
+        const element = document.getElementById(id);
+        if(element) {
+            let value = parseInt(element.textContent.trim()) || 0;
+            value = Math.max(0, Math.min(6, value));
+            element.textContent = value;
+        }
+    });
+}
+
+function changeAttribute(attrName, delta, isSocial = false) {
+    const attrElement = document.getElementById(`attr-${attrName}`);
+    if (!attrElement) return;
+
+    let value = (parseInt(attrElement.textContent.trim()) || 0) + delta;
+
+    if (isSocial) {
+        value = Math.max(0, Math.min(6, value));
+        attrElement.textContent = value;
+    } else {
+        value = Math.max(1, Math.min(99, value));
+        attrElement.textContent = String(value).padStart(2, '0');
+        updateTotalPoints();
+    }
+}
+
+function updateTotalPoints() {
+    const attributeIDs = ['attr-for', 'attr-mag', 'attr-con', 'attr-agl', 'attr-srt'];
+    let total = 0;
+    
+    attributeIDs.forEach(id => {
+        const element = document.getElementById(id);
+        if (element) {
+            let value = parseInt(element.textContent.trim()) || 1;
+            value = Math.max(1, Math.min(99, value));
+            element.textContent = String(value).padStart(2, '0');
+            total += value;
+        }
+    });
+
+    const levelElement = document.getElementById('char-level');
+    const currentLevel = Math.max(1, parseInt(levelElement.textContent.trim()) || 1);
+    const MAX_POINTS_ALLOWED = 25 + ((currentLevel - 1) * 3);
+    
+    const totalDisplay = document.getElementById('total-points-display');
+    if (totalDisplay) {
+        let totalText = `Total Distribuído: ${String(total).padStart(2, '0')}`;
+        let displayColor = '#3E8CEC';
+        if (total > MAX_POINTS_ALLOWED) {
+            displayColor = '#ff3333';
+            totalText += ` (EXCEDE ORÇAMENTO: ${MAX_POINTS_ALLOWED} Máx.)`;
+        }
+        totalDisplay.style.color = displayColor;
+        totalDisplay.textContent = totalText;
+    }
+
+    updateHpSp(); // <-- ADICIONE ESTA LINHA
+}
+
+/**
+ * Calcula e atualiza os valores de HP e SP na ficha.
+ */
+function updateHpSp() {
+    // 1. Pega os valores dos campos necessários
+    const level = parseInt(document.getElementById('char-level').textContent) || 1;
+    const con = parseInt(document.getElementById('attr-con').textContent) || 1;
+    const mag = parseInt(document.getElementById('attr-mag').textContent) || 1;
+
+    // 2. Aplica as fórmulas que você definiu
+    const calculatedHp = (4 * level) + 100 + (5 * con);
+    const calculatedSp = (3 * level) + 50 + (4 * mag);
+
+    // 3. Encontra os elementos de exibição e atualiza o texto deles
+    const hpElement = document.getElementById('hp-value');
+    const spElement = document.getElementById('sp-value');
+
+    if (hpElement) {
+        hpElement.textContent = calculatedHp;
+    }
+    if (spElement) {
+        spElement.textContent = calculatedSp;
+    }
+}
+
+
+// --- LÓGICA DO GERENCIADOR DE IMAGENS ---
+let galeriaImagensLocal = []; // Array local para gerenciar a galeria
+let activeImagePlaceholderId = 'character-image-placeholder';
+let selectedImageIndex = -1;
+
+function toggleImageDropdown(event, dropdownId) {
+    event.preventDefault();
+    event.stopPropagation();
+    const targetMenu = document.getElementById(dropdownId);
+    if (!targetMenu) return;
+    document.querySelectorAll('.image-dropdown').forEach(menu => {
+        if (menu.id !== dropdownId) menu.classList.add('hidden');
+    });
+    targetMenu.classList.toggle('hidden');
+}
+
+function openImageManager(event, placeholderId) {
+    event.preventDefault();
+    event.stopPropagation();
+    activeImagePlaceholderId = placeholderId;
+    document.querySelectorAll('.image-dropdown').forEach(menu => menu.classList.add('hidden'));
+    const imageManagerModal = document.getElementById('image-manager-modal');
+    if (imageManagerModal) imageManagerModal.classList.remove('hidden');
+    renderImageList();
+}
+
+function closeImageManager() {
+    const modal = document.getElementById('image-manager-modal');
+    if (modal) modal.classList.add('hidden');
+    document.querySelectorAll('.image-dropdown').forEach(menu => menu.classList.add('hidden'));
+    selectedImageIndex = -1;
+}
+
+function promptForImageURL() {
+    const url = prompt("Insira o link (URL) da imagem:");
+    if (url && (url.startsWith('http://') || url.startsWith('https://'))) {
+        galeriaImagensLocal.push(url);
+        renderImageList();
+        triggerSave(); // Aciona o salvamento automático
+    } else if (url) {
+        alert("Por favor, insira um link válido (começando com http ou https).");
+    }
+}
+
+function renderImageList() {
+    const display = document.getElementById('image-list-display');
+    display.innerHTML = '';
+    if (galeriaImagensLocal.length === 0) {
+        display.innerHTML = '<p style="color: #aaa; text-align: center; margin-top: 50px;">Nenhuma imagem adicionada.</p>';
+        return;
+    }
+    galeriaImagensLocal.forEach((url, index) => {
+        const item = document.createElement('div');
+        item.className = 'image-preview-item';
+        item.dataset.index = index;
+        item.onclick = (e) => selectImage(e, index);
+        const img = document.createElement('img');
+        img.src = url;
+        img.alt = `Imagem ${index + 1}`;
+        item.appendChild(img);
+        display.appendChild(item);
+    });
+}
+
+function selectImage(event, index) {
+    document.querySelectorAll('.image-preview-item').forEach(item => item.classList.remove('selected'));
+    event.currentTarget.classList.add('selected');
+    selectedImageIndex = index;
+}
+
+function removeSelectedImage() {
+    if (selectedImageIndex > -1 && confirm("Tem certeza de que deseja remover a imagem selecionada?")) {
+        galeriaImagensLocal.splice(selectedImageIndex, 1);
+        selectedImageIndex = -1;
+        renderImageList();
+        triggerSave(); // Aciona o salvamento automático
+    } else if (selectedImageIndex === -1) {
+        alert("Nenhuma imagem selecionada para remover.");
+    }
+}
+
+function confirmImageSelection() {
+    if (selectedImageIndex > -1) {
+        const urlToUse = galeriaImagensLocal[selectedImageIndex];
+        const placeholder = document.getElementById(activeImagePlaceholderId);
+        if (placeholder) {
+            placeholder.style.backgroundImage = `url('${urlToUse}')`;
+            triggerSave(); // Aciona o salvamento automático ao selecionar uma imagem
+        }
+        closeImageManager();
+    } else {
+        alert("Selecione uma imagem para usar.");
+    }
+}
+
+function removeImageFromPlaceholder() {
+    if (activeImagePlaceholderId) {
+        const placeholder = document.getElementById(activeImagePlaceholderId);
+        if (placeholder) {
+            placeholder.style.backgroundImage = 'none';
+            triggerSave(); // Aciona o salvamento automático ao remover uma imagem
+        }
+    }
+    closeImageManager();
+}
+
+
+// --- LÓGICA DE NAVEGAÇÃO E ANIMAÇÃO ---
+function preventLineBreaks(event) {
+    if (event.key === 'Enter' || (event.shiftKey && event.key === 'Enter')) {
+        event.preventDefault();
+    }
+}
+
+function restartVideoLoop() {
+    const video = document.getElementById('bg-video');
+    if (video) {
+        video.currentTime = 2;
+        video.play();
+    }
+}
+
+function showPanel(panelName, clickedButton) {
+    document.querySelectorAll(".display-panel").forEach(panel => panel.style.display = "none");
+    document.querySelectorAll(".tab-button").forEach(button => button.classList.remove("active"));
+    const panel = document.getElementById(panelName);
+    if (panel) panel.style.display = "block";
+    if (clickedButton) clickedButton.classList.add("active");
+}
+
+function openP3RMenu(defaultPanelName) {
+    const mainMenu = document.getElementById('main-menu');
+    const p3rFicha = document.getElementById('p3r-ficha');
+    mainMenu.style.opacity = '0';
+    mainMenu.style.transform = 'scale(0.9)';
+    setTimeout(() => {
+        mainMenu.classList.add('hidden');
+        p3rFicha.classList.remove('hidden');
+        p3rFicha.classList.add('visible');
+        const targetButton = document.querySelector(`.tab-panel .tab-button[onclick*="'${defaultPanelName}'"]`);
+        if (targetButton) showPanel(defaultPanelName, targetButton);
+    }, 500);
+}
+
+function closeP3RMenu() {
+    const mainMenu = document.getElementById('main-menu');
+    const p3rFicha = document.getElementById('p3r-ficha');
+    p3rFicha.classList.remove('visible');
+    setTimeout(() => {
+        p3rFicha.classList.add('hidden');
+        mainMenu.classList.remove('hidden');
+        mainMenu.style.opacity = '1';
+        mainMenu.style.transform = 'scale(1)';
+    }, 500);
+}
+
+
+// --- LÓGICA DO EDITOR DE HISTÓRIA ---
+let savedRange = null;
+
+function saveSelection() {
+    const selection = window.getSelection();
+    if (selection.rangeCount > 0) savedRange = selection.getRangeAt(0).cloneRange();
+}
+
+function restoreSelection() {
+    if (savedRange) {
+        const selection = window.getSelection();
+        selection.removeAllRanges();
+        selection.addRange(savedRange);
+    }
+}
+
+function toggleStyle(style) {
+    restoreSelection();
+    editor.focus();
+    document.execCommand(style);
+    saveSelection();
+}
+
+function applyFontSize() {
+    restoreSelection(); 
+    editor.focus();
+    const size = fontSizeInput.value;
+    if (!size) return;
+    const selection = window.getSelection();
+    if (selection.rangeCount > 0) {
+        const range = selection.getRangeAt(0);
+        const span = document.createElement('span');
+        span.style.fontSize = `${size}px`;
+        if (!range.collapsed) {
+            span.appendChild(range.extractContents());
+            range.insertNode(span);
+        } else {
+            span.innerHTML = '&#8203;'; 
+            range.insertNode(span);
+            range.setStart(span, 1);
+            range.collapse(true);
+            selection.removeAllRanges();
+            selection.addRange(range);
+        }
+        saveSelection();
+    }
+}
+
+function updateToolbarOnSelection() {
+    if (document.activeElement === fontSizeInput) {
+        return;
+    }
+    const selection = window.getSelection();
+    if (!selection.rangeCount) return;
+    let parentElement = selection.getRangeAt(0).commonAncestorContainer;
+    if (parentElement.nodeType === Node.TEXT_NODE) {
+        parentElement = parentElement.parentNode;
+    }
+    if (editor.contains(parentElement)) {
+        const computedStyle = window.getComputedStyle(parentElement);
+        const fontSize = computedStyle.fontSize;
+        fontSizeInput.value = Math.round(parseFloat(fontSize));
+    }
+}
+
+
+// --- LÓGICA DE INSERÇÃO E REDIMENSIONAMENTO DE IMAGENS ---
+let aspect_ratio = 1;
+let startX, startY, startWidth, startHeight;
+
+function addImage() {
+    restoreSelection();
+    editor.focus();
+    const url = prompt("Insira o link (URL) da imagem:");
+    if (url) {
+        document.execCommand('insertImage', false, url);
+        setTimeout(() => {
+            const images = editor.querySelectorAll('img');
+            const lastImage = images[images.length - 1];
+            if (lastImage) {
+                lastImage.onload = () => {
+                    const maxWidth = editor.clientWidth;
+                    if (lastImage.naturalWidth > maxWidth) {
+                        lastImage.style.width = '100%';
+                        lastImage.style.height = 'auto';
+                    }
+                };
+                if (lastImage.complete) {
+                    const maxWidth = editor.clientWidth;
+                    if (lastImage.naturalWidth > maxWidth) {
+                        lastImage.style.width = '100%';
+                        lastImage.style.height = 'auto';
+                    }
+                }
+            }
+        }, 100);
+    }
+}
+
+function showImageResizer(imgElement) {
+    targetImage = imgElement;
+    const wrapper = document.querySelector('.editor-wrapper');
+    const imgRect = targetImage.getBoundingClientRect();
+    const wrapperRect = wrapper.getBoundingClientRect();
+    
+    const top = imgRect.top - wrapperRect.top + editor.scrollTop;
+    const left = imgRect.left - wrapperRect.left + editor.scrollLeft;
+
+    imageResizer.style.display = 'block';
+    imageResizer.style.top = `${top}px`;
+    imageResizer.style.left = `${left}px`;
+    imageResizer.style.width = `${imgRect.width}px`;
+    imageResizer.style.height = `${imgRect.height}px`;
+}
+
+function initResize(e) {
+    e.preventDefault();
+    startX = e.clientX;
+    startY = e.clientY;
+    startWidth = parseInt(document.defaultView.getComputedStyle(targetImage).width, 10);
+    startHeight = parseInt(document.defaultView.getComputedStyle(targetImage).height, 10);
+    aspect_ratio = startWidth / startHeight;
+    document.documentElement.addEventListener('mousemove', doResize, false);
+    document.documentElement.addEventListener('mouseup', stopResize, false);
+}
+
+function doResize(e) {
+    if (!targetImage) return;
+    const maxWidth = editor.clientWidth;
+    let newWidth = startWidth + (e.clientX - startX);
+    if (newWidth < 20) newWidth = 20;
+    if (newWidth > maxWidth) newWidth = maxWidth;
+    
+    let newHeight = newWidth / aspect_ratio;
+    
+    targetImage.style.width = `${newWidth}px`;
+    targetImage.style.height = `${newHeight}px`;
+    showImageResizer(targetImage);
+}
+
+function stopResize() {
+    document.documentElement.removeEventListener('mousemove', doResize, false);
+    document.documentElement.removeEventListener('mouseup', stopResize, false);
+}
+
+
+// --- INICIALIZAÇÃO DA PÁGINA E CONTROLE DE EVENTOS GLOBAIS ---
+document.addEventListener("DOMContentLoaded", function() {
+    updateTotalPoints();
+    updatePersonaTitle();
+    updateHpSp(); // <-- ADICIONE ESTA LINHA
+    
+    const video = document.getElementById('bg-video');
+    if (video) {
+        video.currentTime = 0;
+        video.play();
+    }
+    
+    // Listeners do Editor de Texto
+    fontSizeInput.addEventListener('change', applyFontSize);
+    editor.addEventListener('mouseup', saveSelection);
+    editor.addEventListener('keyup', saveSelection);
+    editor.addEventListener('focus', saveSelection); 
+
+    document.addEventListener('selectionchange', updateToolbarOnSelection);
+
+    editor.addEventListener('keydown', (event) => {
+        if (event.key === 'Tab') {
+            event.preventDefault(); 
+            const selection = window.getSelection();
+            if (!selection.rangeCount) return;
+            const range = selection.getRangeAt(0);
+            const tabNode = document.createTextNode('\t');
+            range.deleteContents(); 
+            range.insertNode(tabNode);
+            range.setStartAfter(tabNode);
+            range.collapse(true);
+            selection.removeAllRanges();
+            selection.addRange(range);
+        }
+    });
+    
+    // Listeners do Redimensionador de Imagem
+    document.querySelectorAll('.resize-handle').forEach(handle => {
+        handle.addEventListener('mousedown', initResize, false);
+    });
+
+    // CORREÇÃO: Listener específico para cliques DENTRO do editor de história (para mostrar o resizer)
+    editor.addEventListener('click', (e) => {
+        if (e.target.tagName === 'IMG') {
+            showImageResizer(e.target);
+        }
+    });
+
+    // Listener de validação para campos de atributos numéricos
+    document.querySelectorAll('#char-level, .editable-value').forEach(el => {
+        el.addEventListener('keydown', filterNumericInput);
+    });
+
+    // Listener para bloquear quebra de linha em campos de linha única
+    const singleLineFields = ['char-name', 'char-sex', 'char-age', 'char-birthdate', 'persona-name-input', 'arcana-name'];
+    singleLineFields.forEach(id => {
+        const element = document.getElementById(id);
+        if (element) {
+            element.addEventListener('keydown', preventLineBreaks);
+        }
+    });
+
+    // Listener para limpar formatação ao colar em TODOS os contenteditable
+    const allEditableFields = document.querySelectorAll('[contenteditable="true"]');
+    allEditableFields.forEach(field => {
+        field.addEventListener('paste', (event) => {
+            event.preventDefault();
+            const text = (event.clipboardData || window.clipboardData).getData('text/plain');
+            document.execCommand('insertText', false, text);
+        });
+    });
+});
+
+// Listener global para teclas como Escape
+document.addEventListener('keydown', function(event) {
+    if (event.key === 'Escape') {
+        const skillModal = document.getElementById('skill-modal');
+        if (skillModal && !skillModal.classList.contains('hidden')) {
+            closeSkillModal(false);
+            return;
+        }
+        const imageManagerModal = document.getElementById('image-manager-modal');
+        if (imageManagerModal && !imageManagerModal.classList.contains('hidden')) {
+            closeImageManager();
+            return;
+        }
+    }
+});
+
+// Listener global para cliques FORA dos elementos (para esconder o resizer e dropdowns)
+document.addEventListener('click', function(event) {
+    // Oculta o redimensionador de imagem se o clique não for nele ou na imagem selecionada
+    if (targetImage && event.target !== targetImage && !imageResizer.contains(event.target)) {
+        imageResizer.style.display = 'none';
+        targetImage = null;
+    }
+
+    // Se o clique não for dentro de um dropdown ou de uma área de imagem, esconde os menus
+    if (!event.target.closest('.image-dropdown') && !event.target.closest('.image-click-area')) {
+        document.querySelectorAll('.image-dropdown').forEach(menu => menu.classList.add('hidden'));
+    }
+});
+
+
+</script>
+
+<script>
+    // --- INÍCIO DO SCRIPT DE SALVAMENTO AUTOMÁTICO DINÂMICO ---
+
+    // 1. Configuração inicial
+    const pb = new PocketBase('https://p3arpg.fly.dev');
+        // --- Monitora o estado da conexão em tempo real (debug visual seguro) ---
+    if (pb.realtime) {
+        const socket = pb.realtime.client;
+
+        // Caso o SDK use um WebSocket real (versões antigas)
+        if (socket && typeof socket.addEventListener === 'function') {
+            socket.addEventListener('open', () => {
+                console.log('%c[RT] Conectado ao PocketBase ✅', 'color: green; font-weight: bold;');
+            });
+
+            socket.addEventListener('close', (e) => {
+                console.warn('%c[RT] Conexão encerrada ❌', 'color: orange; font-weight: bold;', e.reason || e);
+            });
+
+            socket.addEventListener('error', (e) => {
+                console.error('%c[RT] Erro na conexão WebSocket ⚠️', 'color: red; font-weight: bold;', e);
+            });
+        } 
+        // Caso o SDK novo não use WebSocket direto
+        else {
+            console.log('%c[RT] PocketBase usa WebSocket interno (sem eventos diretos).', 'color: gray;');
+            console.log('%c[RT] Acompanhe eventos pelo subscribe() normalmente.', 'color: gray;');
+        }
+    } else {
+        console.warn('%c[RT] Sistema de tempo real indisponível nesta versão do SDK.', 'color: gray;');
+    }
+
+    const fichaId = '9vycrnbh5uz5e60'; // ID da ficha que estamos editando
+    let saveTimer; // Variável para controlar nosso cronômetro
+
+    // 2. Função para CARREGAR os dados da ficha
+    async function carregarFicha() {
+        try {
+            console.log(`Buscando dados da ficha com ID: ${fichaId}`);
+            const record = await pb.collection('fichas').getOne(fichaId);
+            
+            console.log('Dados recebidos:', record);
+
+            // Carrega a galeria de imagens para a variável local
+            galeriaImagensLocal = record.galeria_urls || [];
+            
+            // Carrega dados das habilidades
+            if (record.habilidades && Object.keys(record.habilidades).length > 0) {
+                skillData = record.habilidades;
+                // Loop para atualizar o texto de cada botão de habilidade
+                for (let i = 1; i <= 8; i++) {
+                    const skillId = `skill-${i}`;
+                    const button = document.getElementById(`skill-btn-${i}`);
+                    if (skillData[skillId] && skillData[skillId].name) {
+                        button.textContent = skillData[skillId].name;
+                    } else if (button) {
+                         button.textContent = `Habilidade ${i}`;
+                    }
+                }
+            }
+
+            // Carrega as imagens dos placeholders
+            if (record.imagem_personagem_url) {
+                document.getElementById('character-image-placeholder').style.backgroundImage = `url('${record.imagem_personagem_url}')`;
+            }
+            if (record.persona_imagem_url) {
+                document.getElementById('persona-image-placeholder').style.backgroundImage = `url('${record.persona_imagem_url}')`;
+            }
+            if (record.arcana_imagem_url) {
+                document.getElementById('arcana-icon-placeholder').style.backgroundImage = `url('${record.arcana_imagem_url}')`;
+            }
+
+            // Loop dinâmico para preencher os campos com 'data-field'
+            document.querySelectorAll('[data-field]').forEach(element => {
+                const fieldName = element.dataset.field;
+                if (record[fieldName] !== undefined) {
+                    if (element.tagName === 'TEXTAREA' || element.tagName === 'SELECT') {
+                        element.value = record[fieldName];
+                    } else if (element.id === 'history-editor') {
+                        element.innerHTML = record[fieldName];
+                    } else {
+                        // Ignora os placeholders de imagem que já foram tratados
+                        if (!element.classList.contains('image-placeholder') && !element.classList.contains('arcana-icon')) {
+                           element.textContent = record[fieldName];
+                        }
+                    }
+                }
+            });
+            
+            // Funções visuais que precisam rodar após carregar
+            updateHpSp();
+            updateTotalPoints();
+            
+            console.log('Ficha preenchida com sucesso!');
+
+        } catch (error) {
+            console.error('Falha ao carregar a ficha:', error);
+            alert('Não foi possível carregar os dados da ficha. Verifique o console para mais detalhes.');
+        }
+    }
+
+    // 3. Função ÚNICA e DINÂMICA para SALVAR a ficha inteira
+    async function salvarFichaCompleta() {
+        try {
+            // Roda as validações visuais antes de salvar
+            validateLevel();
+            updateTotalPoints();
+            validateSocialPoints();
+            updateHpSp();
+
+            const dadosParaSalvar = {
+                galeria_urls: galeriaImagensLocal, // Salva a galeria
+                habilidades: skillData             // Salva o objeto de habilidades
+            };
+
+            // Loop dinâmico para coletar os dados dos campos com 'data-field'
+            document.querySelectorAll('[data-field]').forEach(element => {
+                const fieldName = element.dataset.field;
+                let value;
+
+                // Determina como ler o valor baseado no tipo de elemento
+                if (element.tagName === 'TEXTAREA' || element.tagName === 'SELECT') {
+                    value = element.value;
+                } else if (element.id === 'history-editor') {
+                    value = element.innerHTML;
+                } else if (element.classList.contains('image-placeholder') || element.classList.contains('arcana-icon')) {
+                    // Extrai a URL de dentro do 'url("...")'
+                    const bgImage = element.style.backgroundImage;
+                    value = bgImage ? bgImage.slice(5, -2) : '';
+                }
+                else {
+                    value = element.textContent;
+                }
+                
+                dadosParaSalvar[fieldName] = value;
+            });
+
+            console.log('Enviando dados para salvar:', dadosParaSalvar);
+            await pb.collection('fichas').update(fichaId, dadosParaSalvar);
+            console.log('Ficha salva com sucesso!');
+
+        } catch (error) {
+            console.error('Falha ao salvar a ficha:', error);
+        }
+    }
+
+    // 4. Função que ACIONA O TIMER de salvamento (Debounce)
+    function triggerSave() {
+        clearTimeout(saveTimer);
+        saveTimer = setTimeout(salvarFichaCompleta, 1500);
+    }
+
+    // 5. Função que INICIALIZA os gatilhos de salvamento
+    function inicializarGatilhos() {
+        // Monitora todos os campos com 'data-field' e os botões de atributo
+        const camposParaMonitorar = document.querySelectorAll('[data-field], .attr-btn');
+
+        camposParaMonitorar.forEach(campo => {
+            if (campo.classList.contains('attr-btn')) {
+                campo.addEventListener('click', triggerSave);
+            } else {
+                // Para <select>, o evento correto é 'change'
+                const eventType = campo.tagName === 'SELECT' ? 'change' : 'input';
+                campo.addEventListener(eventType, triggerSave);
+            }
+        });
+        console.log('Gatilhos de salvamento automático inicializados.');
+    }
+
+    // 6. Função para "OUVIR" as mudanças em tempo real
+    async function inicializarAssinaturaTempoReal() {
+        console.log('Inscrevendo-se para atualizações em tempo real...');
+
+        // Assina as atualizações da coleção
+        pb.collection('fichas').subscribe(fichaId, function (e) {
+            console.log('%cRecebida uma atualização em tempo real!', 'color: cyan;', e.record);
+
+            const record = e.record;
+
+            // Carrega a galeria e as habilidades
+            galeriaImagensLocal = record.galeria_urls || [];
+            if (record.habilidades && Object.keys(record.habilidades).length > 0) {
+                skillData = record.habilidades;
+                for (let i = 1; i <= 8; i++) {
+                    const skillId = `skill-${i}`;
+                    const button = document.getElementById(`skill-btn-${i}`);
+                    if (skillData[skillId] && skillData[skillId].name) {
+                        button.textContent = skillData[skillId].name;
+                    } else if (button) {
+                        button.textContent = `Habilidade ${i}`;
+                    }
+                }
+            }
+
+            // Carrega as imagens dos placeholders
+            document.getElementById('character-image-placeholder').style.backgroundImage = record.imagem_personagem_url ? `url('${record.imagem_personagem_url}')` : '';
+            document.getElementById('persona-image-placeholder').style.backgroundImage = record.persona_imagem_url ? `url('${record.persona_imagem_url}')` : '';
+            document.getElementById('arcana-icon-placeholder').style.backgroundImage = record.arcana_imagem_url ? `url('${record.arcana_imagem_url}')` : '';
+
+            // Loop dinâmico para preencher todos os outros campos
+            document.querySelectorAll('[data-field]').forEach(element => {
+                const fieldName = element.dataset.field;
+                if (record[fieldName] !== undefined) {
+                    if (element.tagName === 'TEXTAREA' || element.tagName === 'SELECT') {
+                        element.value = record[fieldName];
+                    } else if (element.id === 'history-editor') {
+                        element.innerHTML = record[fieldName];
+                    } else {
+                        if (!element.classList.contains('image-placeholder') && !element.classList.contains('arcana-icon')) {
+                        element.textContent = record[fieldName];
+                        }
+                    }
+                }
+            });
+
+            // Funções visuais que precisam ser recalculadas
+            updateHpSp();
+            updateTotalPoints();
+        });
+    }
+
+    // 7. Roda as funções principais quando a página carrega
+    carregarFicha();
+    inicializarGatilhos();
+    inicializarAssinaturaTempoReal();
+
+    // --- FIM DO SCRIPT DE SALVAMENTO AUTOMÁTICO DINÂMICO ---
+</script>
+
+
+</body>
+</html>
