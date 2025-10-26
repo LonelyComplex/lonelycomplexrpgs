@@ -734,7 +734,7 @@
             
             <div class="person-layout">
 
-                <div class="image-placeholder" id="character-image-placeholder">
+                <div class="image-placeholder" id="character-image-placeholder" data-field="imagem_personagem_url">
                     <div class="image-click-area" onclick="toggleImageDropdown(event, 'character-image-dropdown-menu')"></div>
                     <div class="image-dropdown hidden" id="character-image-dropdown-menu">
                         <a href="#" onclick="openImageManager(event, 'character-image-placeholder')">Abrir Gerenciador de Imagens</a>
@@ -1760,6 +1760,7 @@ async function carregarFicha() {
 
     // Carrega a galeria e habilidades
     window.galeriaImagensLocal = record.galeria_urls || [];
+    renderImageList(); // <-- ADICIONE ESTA LINHA AQUI
     window.skillData = record.habilidades || {};
 
     // Atualiza rótulos das habilidades (se existirem)
