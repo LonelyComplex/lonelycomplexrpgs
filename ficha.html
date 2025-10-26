@@ -697,9 +697,6 @@
 
 
     </style>
-
-<script src="https://cdn.jsdelivr.net/npm/pocketbase@latest/dist/pocketbase.umd.js"></script>
-    
 </head>
 <body>
 
@@ -1742,236 +1739,316 @@ document.addEventListener('click', function(event) {
 </script>
 
 <script>
-    // --- INÍCIO DO SCRIPT DE SALVAMENTO AUTOMÁTICO DINÂMICO ---
+// --- INÍCIO DO SCRIPT DE SALVAMENTO AUTOMÁTICO DINÂMICO (OFFLINE/LOCAL) ---
 
-    // 1. Configuração inicial
-    const pb = new PocketBase('https://p3arpg.fly.dev');
-        // --- Monitora o estado da conexão em tempo real (debug visual seguro) ---
-    if (pb.realtime) {
-        const socket = pb.realtime.client;
+// 1) Configuração de armazenamento local por ficha (via ?id= na URL)
+const params = new URLSearchParams(window.location.search);
+const fichaId = params.get('id') || 'default';
+const STORAGE_KEY = `p3-ficha:${fichaId}`;
 
-        // Caso o SDK use um WebSocket real (versões antigas)
-        if (socket && typeof socket.addEventListener === 'function') {
-            socket.addEventListener('open', () => {
-                console.log('%c[RT] Conectado ao PocketBase ✅', 'color: green; font-weight: bold;');
-            });
+let saveTimer; // controle do debounce
+// Variáveis usadas noutros módulos
+window.galeriaImagensLocal = Array.isArray(window.galeriaImagensLocal) ? window.galeriaImagensLocal : [];
+window.skillData = typeof window.skillData === 'object' && window.skillData ? window.skillData : {};
 
-            socket.addEventListener('close', (e) => {
-                console.warn('%c[RT] Conexão encerrada ❌', 'color: orange; font-weight: bold;', e.reason || e);
-            });
+// 2) Carregar ficha do localStorage e preencher a UI
+async function carregarFicha() {
+  try {
+    console.log(`[LOCAL] Carregando dados de ${STORAGE_KEY}`);
+    const json = localStorage.getItem(STORAGE_KEY);
+    const record = json ? JSON.parse(json) : {};
 
-            socket.addEventListener('error', (e) => {
-                console.error('%c[RT] Erro na conexão WebSocket ⚠️', 'color: red; font-weight: bold;', e);
-            });
-        } 
-        // Caso o SDK novo não use WebSocket direto
-        else {
-            console.log('%c[RT] PocketBase usa WebSocket interno (sem eventos diretos).', 'color: gray;');
-            console.log('%c[RT] Acompanhe eventos pelo subscribe() normalmente.', 'color: gray;');
+    // Carrega a galeria e habilidades
+    window.galeriaImagensLocal = record.galeria_urls || [];
+    window.skillData = record.habilidades || {};
+
+    // Atualiza rótulos das habilidades (se existirem)
+    for (let i = 1; i <= 8; i++) {
+      const skillId = `skill-${i}`;
+      const button = document.getElementById(`skill-btn-${i}`);
+      if (button) {
+        const nome = (window.skillData[skillId] && window.skillData[skillId].name) ? window.skillData[skillId].name : `Habilidade ${i}`;
+        button.textContent = nome;
+      }
+    }
+
+    // Carrega as imagens dos placeholders
+    const charImg = record.imagem_personagem_url || record.character_image_url || '';
+    const personaImg = record.persona_imagem_url || '';
+    const arcanaImg = record.arcana_imagem_url || '';
+
+    const charPh = document.getElementById('character-image-placeholder');
+    const personaPh = document.getElementById('persona-image-placeholder');
+    const arcanaPh = document.getElementById('arcana-icon-placeholder');
+    if (charPh) charPh.style.backgroundImage = charImg ? `url('${charImg}')` : '';
+    if (personaPh) personaPh.style.backgroundImage = personaImg ? `url('${personaImg}')` : '';
+    if (arcanaPh) arcanaPh.style.backgroundImage = arcanaImg ? `url('${arcanaImg}')` : '';
+
+    // Preenche todos os elementos com data-field
+    document.querySelectorAll('[data-field]').forEach(element => {
+      const fieldName = element.dataset.field;
+      if (record[fieldName] !== undefined) {
+        if (element.tagName === 'TEXTAREA' || element.tagName === 'SELECT') {
+          element.value = record[fieldName];
+        } else if (element.id === 'history-editor') {
+          element.innerHTML = record[fieldName];
+        } else if (!element.classList.contains('image-placeholder') && !element.classList.contains('arcana-icon')) {
+          element.textContent = record[fieldName];
         }
-    } else {
-        console.warn('%c[RT] Sistema de tempo real indisponível nesta versão do SDK.', 'color: gray;');
+      }
+    });
+
+    // Recalcula derivados
+    if (typeof updateHpSp === 'function') updateHpSp();
+    if (typeof updateTotalPoints === 'function') updateTotalPoints();
+    if (typeof updatePersonaTitle === 'function') updatePersonaTitle();
+
+    console.log('[LOCAL] Ficha preenchida a partir do armazenamento local.');
+  } catch (err) {
+    console.error('[LOCAL] Falha ao carregar ficha:', err);
+  }
+}
+
+// 3) Salvar ficha COMPLETA no localStorage
+async function salvarFichaCompleta() {
+  try {
+    // Executa validações antes de salvar
+    if (typeof validateLevel === 'function') validateLevel();
+    if (typeof updateTotalPoints === 'function') updateTotalPoints();
+    if (typeof validateSocialPoints === 'function') validateSocialPoints();
+    if (typeof updateHpSp === 'function') updateHpSp();
+
+    const dadosParaSalvar = {
+      galeria_urls: window.galeriaImagensLocal,
+      habilidades: window.skillData
+    };
+
+    // Coleta todos os data-field
+    document.querySelectorAll('[data-field]').forEach(element => {
+      const fieldName = element.dataset.field;
+      let value;
+      if (element.tagName === 'TEXTAREA' || element.tagName === 'SELECT') {
+        value = element.value;
+      } else if (element.id === 'history-editor') {
+        value = element.innerHTML;
+      } else if (element.classList.contains('image-placeholder') || element.classList.contains('arcana-icon')) {
+        const bgImage = element.style.backgroundImage;
+        value = bgImage ? bgImage.slice(5, -2) : '';
+      } else {
+        value = element.textContent;
+      }
+      dadosParaSalvar[fieldName] = value;
+    });
+
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(dadosParaSalvar));
+    console.log('[LOCAL] Ficha salva em', STORAGE_KEY, dadosParaSalvar);
+  } catch (err) {
+    console.error('[LOCAL] Falha ao salvar ficha:', err);
+  }
+}
+
+// 4) Debounce de salvamento
+function triggerSave() {
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(salvarFichaCompleta, 1500);
+}
+
+// 5) Gatilhos automáticos (input/blur) para todos os campos úteis
+function inicializarGatilhos() {
+  const targets = new Set();
+  document.querySelectorAll('[data-field], [contenteditable="true"], textarea, select').forEach(el => {
+    if (targets.has(el)) return;
+    targets.add(el);
+    const handler = () => triggerSave();
+    el.addEventListener('input', handler);
+    el.addEventListener('change', handler);
+    el.addEventListener('blur', handler);
+  });
+  // Salva também quando fechar a página
+  window.addEventListener('beforeunload', () => {
+    try { salvarFichaCompleta(); } catch {}
+  });
+}
+
+// 6) Inicialização
+carregarFicha();
+inicializarGatilhos();
+
+
+// --- Recursos extras: Exportar/Importar e sincronizar entre abas ---
+
+// 7) Exportar ficha para arquivo JSON
+function exportarFicha() {
+  try {
+    const json = localStorage.getItem(STORAGE_KEY);
+    if (!json) {
+      alert("Nenhum dado encontrado para exportar.");
+      return;
     }
+    const blob = new Blob([json], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${fichaId}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  } catch (err) {
+    console.error('[LOCAL] Falha ao exportar ficha:', err);
+  }
+}
 
-    const fichaId = '9vycrnbh5uz5e60'; // ID da ficha que estamos editando
-    let saveTimer; // Variável para controlar nosso cronômetro
-
-    // 2. Função para CARREGAR os dados da ficha
-    async function carregarFicha() {
-        try {
-            console.log(`Buscando dados da ficha com ID: ${fichaId}`);
-            const record = await pb.collection('fichas').getOne(fichaId);
-            
-            console.log('Dados recebidos:', record);
-
-            // Carrega a galeria de imagens para a variável local
-            galeriaImagensLocal = record.galeria_urls || [];
-            
-            // Carrega dados das habilidades
-            if (record.habilidades && Object.keys(record.habilidades).length > 0) {
-                skillData = record.habilidades;
-                // Loop para atualizar o texto de cada botão de habilidade
-                for (let i = 1; i <= 8; i++) {
-                    const skillId = `skill-${i}`;
-                    const button = document.getElementById(`skill-btn-${i}`);
-                    if (skillData[skillId] && skillData[skillId].name) {
-                        button.textContent = skillData[skillId].name;
-                    } else if (button) {
-                         button.textContent = `Habilidade ${i}`;
-                    }
-                }
-            }
-
-            // Carrega as imagens dos placeholders
-            if (record.imagem_personagem_url) {
-                document.getElementById('character-image-placeholder').style.backgroundImage = `url('${record.imagem_personagem_url}')`;
-            }
-            if (record.persona_imagem_url) {
-                document.getElementById('persona-image-placeholder').style.backgroundImage = `url('${record.persona_imagem_url}')`;
-            }
-            if (record.arcana_imagem_url) {
-                document.getElementById('arcana-icon-placeholder').style.backgroundImage = `url('${record.arcana_imagem_url}')`;
-            }
-
-            // Loop dinâmico para preencher os campos com 'data-field'
-            document.querySelectorAll('[data-field]').forEach(element => {
-                const fieldName = element.dataset.field;
-                if (record[fieldName] !== undefined) {
-                    if (element.tagName === 'TEXTAREA' || element.tagName === 'SELECT') {
-                        element.value = record[fieldName];
-                    } else if (element.id === 'history-editor') {
-                        element.innerHTML = record[fieldName];
-                    } else {
-                        // Ignora os placeholders de imagem que já foram tratados
-                        if (!element.classList.contains('image-placeholder') && !element.classList.contains('arcana-icon')) {
-                           element.textContent = record[fieldName];
-                        }
-                    }
-                }
-            });
-            
-            // Funções visuais que precisam rodar após carregar
-            updateHpSp();
-            updateTotalPoints();
-            
-            console.log('Ficha preenchida com sucesso!');
-
-        } catch (error) {
-            console.error('Falha ao carregar a ficha:', error);
-            alert('Não foi possível carregar os dados da ficha. Verifique o console para mais detalhes.');
-        }
+// 8) Importar ficha de arquivo JSON
+function importarFicha(arquivo) {
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    try {
+      const json = e.target.result;
+      localStorage.setItem(STORAGE_KEY, json);
+      alert("Ficha importada com sucesso! Recarregando...");
+      location.reload();
+    } catch (err) {
+      console.error('[LOCAL] Falha ao importar:', err);
     }
+  };
+  reader.readAsText(arquivo);
+}
 
-    // 3. Função ÚNICA e DINÂMICA para SALVAR a ficha inteira
-    async function salvarFichaCompleta() {
-        try {
-            // Roda as validações visuais antes de salvar
-            validateLevel();
-            updateTotalPoints();
-            validateSocialPoints();
-            updateHpSp();
-
-            const dadosParaSalvar = {
-                galeria_urls: galeriaImagensLocal, // Salva a galeria
-                habilidades: skillData             // Salva o objeto de habilidades
-            };
-
-            // Loop dinâmico para coletar os dados dos campos com 'data-field'
-            document.querySelectorAll('[data-field]').forEach(element => {
-                const fieldName = element.dataset.field;
-                let value;
-
-                // Determina como ler o valor baseado no tipo de elemento
-                if (element.tagName === 'TEXTAREA' || element.tagName === 'SELECT') {
-                    value = element.value;
-                } else if (element.id === 'history-editor') {
-                    value = element.innerHTML;
-                } else if (element.classList.contains('image-placeholder') || element.classList.contains('arcana-icon')) {
-                    // Extrai a URL de dentro do 'url("...")'
-                    const bgImage = element.style.backgroundImage;
-                    value = bgImage ? bgImage.slice(5, -2) : '';
-                }
-                else {
-                    value = element.textContent;
-                }
-                
-                dadosParaSalvar[fieldName] = value;
-            });
-
-            console.log('Enviando dados para salvar:', dadosParaSalvar);
-            await pb.collection('fichas').update(fichaId, dadosParaSalvar);
-            console.log('Ficha salva com sucesso!');
-
-        } catch (error) {
-            console.error('Falha ao salvar a ficha:', error);
-        }
-    }
-
-    // 4. Função que ACIONA O TIMER de salvamento (Debounce)
-    function triggerSave() {
-        clearTimeout(saveTimer);
-        saveTimer = setTimeout(salvarFichaCompleta, 1500);
-    }
-
-    // 5. Função que INICIALIZA os gatilhos de salvamento
-    function inicializarGatilhos() {
-        // Monitora todos os campos com 'data-field' e os botões de atributo
-        const camposParaMonitorar = document.querySelectorAll('[data-field], .attr-btn');
-
-        camposParaMonitorar.forEach(campo => {
-            if (campo.classList.contains('attr-btn')) {
-                campo.addEventListener('click', triggerSave);
-            } else {
-                // Para <select>, o evento correto é 'change'
-                const eventType = campo.tagName === 'SELECT' ? 'change' : 'input';
-                campo.addEventListener(eventType, triggerSave);
-            }
-        });
-        console.log('Gatilhos de salvamento automático inicializados.');
-    }
-
-    // 6. Função para "OUVIR" as mudanças em tempo real
-    async function inicializarAssinaturaTempoReal() {
-        console.log('Inscrevendo-se para atualizações em tempo real...');
-
-        // Assina as atualizações da coleção
-        pb.collection('fichas').subscribe(fichaId, function (e) {
-            console.log('%cRecebida uma atualização em tempo real!', 'color: cyan;', e.record);
-
-            const record = e.record;
-
-            // Carrega a galeria e as habilidades
-            galeriaImagensLocal = record.galeria_urls || [];
-            if (record.habilidades && Object.keys(record.habilidades).length > 0) {
-                skillData = record.habilidades;
-                for (let i = 1; i <= 8; i++) {
-                    const skillId = `skill-${i}`;
-                    const button = document.getElementById(`skill-btn-${i}`);
-                    if (skillData[skillId] && skillData[skillId].name) {
-                        button.textContent = skillData[skillId].name;
-                    } else if (button) {
-                        button.textContent = `Habilidade ${i}`;
-                    }
-                }
-            }
-
-            // Carrega as imagens dos placeholders
-            document.getElementById('character-image-placeholder').style.backgroundImage = record.imagem_personagem_url ? `url('${record.imagem_personagem_url}')` : '';
-            document.getElementById('persona-image-placeholder').style.backgroundImage = record.persona_imagem_url ? `url('${record.persona_imagem_url}')` : '';
-            document.getElementById('arcana-icon-placeholder').style.backgroundImage = record.arcana_imagem_url ? `url('${record.arcana_imagem_url}')` : '';
-
-            // Loop dinâmico para preencher todos os outros campos
-            document.querySelectorAll('[data-field]').forEach(element => {
-                const fieldName = element.dataset.field;
-                if (record[fieldName] !== undefined) {
-                    if (element.tagName === 'TEXTAREA' || element.tagName === 'SELECT') {
-                        element.value = record[fieldName];
-                    } else if (element.id === 'history-editor') {
-                        element.innerHTML = record[fieldName];
-                    } else {
-                        if (!element.classList.contains('image-placeholder') && !element.classList.contains('arcana-icon')) {
-                        element.textContent = record[fieldName];
-                        }
-                    }
-                }
-            });
-
-            // Funções visuais que precisam ser recalculadas
-            updateHpSp();
-            updateTotalPoints();
-        });
-    }
-
-    // 7. Roda as funções principais quando a página carrega
+// 9) Sincronização automática entre abas (evento storage)
+window.addEventListener('storage', (e) => {
+  if (e.key === STORAGE_KEY) {
+    console.log('[LOCAL] Atualização detectada em outra aba. Recarregando ficha.');
     carregarFicha();
-    inicializarGatilhos();
-    inicializarAssinaturaTempoReal();
+  }
+});
 
-    // --- FIM DO SCRIPT DE SALVAMENTO AUTOMÁTICO DINÂMICO ---
+// 10) Adicionar botões visuais na interface (Exportar / Importar / Resetar)
+document.addEventListener('DOMContentLoaded', () => {
+  const barra = document.createElement('div');
+  barra.style.position = 'fixed';
+  barra.style.bottom = '10px';
+  barra.style.right = '10px';
+  barra.style.background = 'rgba(0,0,0,0.6)';
+  barra.style.color = 'white';
+  barra.style.padding = '8px 10px';
+  barra.style.borderRadius = '8px';
+  barra.style.fontSize = '14px';
+  barra.style.zIndex = '9999';
+  barra.innerHTML = `
+    <button id="btn-exportar">Exportar</button>
+    <button id="btn-importar">Importar</button>
+    <button id="btn-resetar">Resetar</button>
+    <input type="file" id="input-importar" style="display:none" accept=".json"/>
+  `;
+  document.body.appendChild(barra);
+
+  const bExp = document.getElementById('btn-exportar');
+  const bImp = document.getElementById('btn-importar');
+  const bRes = document.getElementById('btn-resetar');
+  const inp = document.getElementById('input-importar');
+
+  bExp.addEventListener('click', exportarFicha);
+  bImp.addEventListener('click', () => inp.click());
+  inp.addEventListener('change', (e) => {
+    if (e.target.files.length) importarFicha(e.target.files[0]);
+  });
+  bRes.addEventListener('click', () => {
+    if (confirm("Tem certeza que deseja apagar esta ficha local?")) {
+      localStorage.removeItem(STORAGE_KEY);
+      alert("Ficha apagada. Recarregando...");
+      location.reload();
+    }
+  });
+});
+// --- Fim dos recursos extras ---
+
+
+// --- Ajuste de gerenciamento de imagens (Base64 local apenas para campos principais) ---
+
+// Função auxiliar: baixar e converter uma imagem URL -> base64
+async function baixarComoBase64(url) {
+  try {
+    const response = await fetch(url, { mode: 'cors' });
+    const blob = await response.blob();
+    return await new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onloadend = () => resolve(reader.result);
+      reader.onerror = reject;
+      reader.readAsDataURL(blob);
+    });
+  } catch (err) {
+    console.warn('[IMG] Falha ao converter imagem para base64:', err);
+    return null;
+  }
+}
+
+// Define imagem em um placeholder, salvando base64 apenas para campos principais
+async function definirImagemLocal(elementId, url) {
+  const element = document.getElementById(elementId);
+  if (!element) return;
+
+  const isCampoPrincipal = ['character-image-placeholder', 'persona-image-placeholder', 'arcana-icon-placeholder'].includes(elementId);
+
+  if (isCampoPrincipal) {
+    const base64 = await baixarComoBase64(url);
+    if (base64) {
+      element.style.backgroundImage = `url('${base64}')`;
+      // Salva o base64 no record atual
+      const dados = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+      const fieldName = element.dataset.field || elementId;
+      dados[fieldName + '_base64'] = base64;
+      dados[fieldName + '_url'] = url;
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(dados));
+      console.log(`[IMG] Base64 salva para ${elementId}`);
+    } else {
+      element.style.backgroundImage = `url('${url}')`;
+    }
+  } else {
+    // Campos de galeria ou secundários: apenas URL
+    element.style.backgroundImage = `url('${url}')`;
+  }
+
+  triggerSave();
+}
+
+// Ao carregar, tenta usar base64 primeiro, fallback para URL ou online
+function restaurarImagensPrincipais(record) {
+  const campos = [
+    { id: 'character-image-placeholder', field: 'imagem_personagem' },
+    { id: 'persona-image-placeholder', field: 'persona_imagem' },
+    { id: 'arcana-icon-placeholder', field: 'arcana_imagem' }
+  ];
+  campos.forEach(({ id, field }) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    const base64 = record[field + '_base64'];
+    const url = record[field + '_url'] || record[field + '_url'];
+    if (base64) {
+      el.style.backgroundImage = `url('${base64}')`;
+    } else if (url) {
+      el.style.backgroundImage = `url('${url}')`;
+    } else {
+      el.style.backgroundImage = '';
+    }
+  });
+}
+
+// Sobrescrever parte do carregarFicha para chamar restaurarImagensPrincipais
+const _old_carregarFicha = carregarFicha;
+carregarFicha = async function() {
+  await _old_carregarFicha();
+  try {
+    const json = localStorage.getItem(STORAGE_KEY);
+    const record = json ? JSON.parse(json) : {};
+    restaurarImagensPrincipais(record);
+  } catch (e) { console.error(e); }
+};
+// --- Fim do ajuste de imagens ---
+
+// --- FIM DO SCRIPT DE SALVAMENTO AUTOMÁTICO DINÂMICO (OFFLINE/LOCAL) ---
 </script>
 
 
 </body>
-
 </html>
-
