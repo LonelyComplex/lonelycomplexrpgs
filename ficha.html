@@ -1082,7 +1082,7 @@
         
         <div class="manager-footer">
             <button class="confirm-button" onclick="confirmImageSelection()">Usar Selecionada</button>
-            <button class="confirm-button" onclick="removeImageFromPlaceholder()">Remover Imagem</button>
+            <button class="confirm-button" onclick="removeImageFromPlaceholder()">Remover Imagem Atual</button>
         </div>
     </div>
 </div>
@@ -1132,7 +1132,7 @@ let targetImage = null; // MOVIDO PARA O TOPO
 
 
 // --- DADOS E LÓGICA DAS HABILIDADES (AINDA NÃO CONECTADO AO POCKETBASE) ---
-let skillData = {
+window.skillData = {
     'skill-1': { name: 'Habilidade 1', type: '', description: '' },
     'skill-2': { name: 'Habilidade 2', type: '', description: '' },
     'skill-3': { name: 'Habilidade 3', type: '', description: '' },
@@ -1146,7 +1146,7 @@ let activeSkillId = null;
 
 function openSkillModal(skillNumber) {
     activeSkillId = `skill-${skillNumber}`;
-    const data = skillData[activeSkillId];
+    const data = window.skillData[activeSkillId];
     document.getElementById('current-skill-number').textContent = skillNumber;
     document.getElementById('current-skill-id').value = activeSkillId;
     document.getElementById('skill-name').value = data.name;
@@ -1159,10 +1159,10 @@ function openSkillModal(skillNumber) {
 
 function closeSkillModal(saveChanges = true) {
     if (activeSkillId && saveChanges) {
-        skillData[activeSkillId].name = document.getElementById('skill-name').value.trim();
-        skillData[activeSkillId].type = document.getElementById('skill-type').value.trim();
-        skillData[activeSkillId].description = document.getElementById('skill-description').value.trim();
-        updateSkillButtonName(skillData[activeSkillId].name, activeSkillId); 
+        window.skillData[activeSkillId].name = document.getElementById('skill-name').value.trim();
+        window.skillData[activeSkillId].type = document.getElementById('skill-type').value.trim();
+        window.skillData[activeSkillId].description = document.getElementById('skill-description').value.trim();
+        updateSkillButtonName(window.skillData[activeSkillId].name, activeSkillId); 
     }
     activeSkillId = null;
     const modal = document.getElementById('skill-modal');
@@ -1330,7 +1330,7 @@ function updateHpSp() {
 
 
 // --- LÓGICA DO GERENCIADOR DE IMAGENS ---
-let galeriaImagensLocal = []; // Array local para gerenciar a galeria
+window.galeriaImagensLocal = []; // Array GLOBAL para gerenciar a galeria
 let activeImagePlaceholderId = 'character-image-placeholder';
 let selectedImageIndex = -1;
 
@@ -1741,15 +1741,14 @@ document.addEventListener('click', function(event) {
 <script>
 // --- INÍCIO DO SCRIPT DE SALVAMENTO AUTOMÁTICO DINÂMICO (OFFLINE/LOCAL) ---
 
+let blockAutosave = false; // <-- ADICIONE ESTA LINHA
+
 // 1) Configuração de armazenamento local por ficha (via ?id= na URL)
 const params = new URLSearchParams(window.location.search);
 const fichaId = params.get('id') || 'default';
 const STORAGE_KEY = `p3-ficha:${fichaId}`;
 
 let saveTimer; // controle do debounce
-// Variáveis usadas noutros módulos
-window.galeriaImagensLocal = Array.isArray(window.galeriaImagensLocal) ? window.galeriaImagensLocal : [];
-window.skillData = typeof window.skillData === 'object' && window.skillData ? window.skillData : {};
 
 // 2) Carregar ficha do localStorage e preencher a UI
 async function carregarFicha() {
@@ -1761,7 +1760,12 @@ async function carregarFicha() {
     // Carrega a galeria e habilidades
     window.galeriaImagensLocal = record.galeria_urls || [];
     renderImageList(); // <-- ADICIONE ESTA LINHA AQUI
-    window.skillData = record.habilidades || {};
+    const loadedSkills = record.habilidades;
+    if (loadedSkills && typeof loadedSkills === 'object') {
+        // Mescla os dados salvos na estrutura padrão, sem substituí-la
+        Object.assign(window.skillData, loadedSkills);
+    }
+    // Se não houver 'habilidades' salvas, a estrutura padrão é mantida.
 
     // Atualiza rótulos das habilidades (se existirem)
     for (let i = 1; i <= 8; i++) {
@@ -1812,6 +1816,7 @@ async function carregarFicha() {
 
 // 3) Salvar ficha COMPLETA no localStorage
 async function salvarFichaCompleta() {
+  if (blockAutosave) return; // <-- ADICIONE ESTA LINHA AQUI  
   try {
     // Executa validações antes de salvar
     if (typeof validateLevel === 'function') validateLevel();
@@ -1850,8 +1855,10 @@ async function salvarFichaCompleta() {
 
 // 4) Debounce de salvamento
 function triggerSave() {
-  clearTimeout(saveTimer);
-  saveTimer = setTimeout(salvarFichaCompleta, 1500);
+    if (blockAutosave) return; // <-- ADICIONE ESTA LINHA
+
+    clearTimeout(saveTimer);
+    saveTimer = setTimeout(salvarFichaCompleta, 1500);
 }
 
 // 5) Gatilhos automáticos (input/blur) para todos os campos úteis
@@ -1952,10 +1959,14 @@ document.addEventListener('DOMContentLoaded', () => {
   bExp.addEventListener('click', exportarFicha);
   bImp.addEventListener('click', () => inp.click());
   inp.addEventListener('change', (e) => {
-    if (e.target.files.length) importarFicha(e.target.files[0]);
+    if (e.target.files.length) {
+      blockAutosave = true; // <-- ADICIONE AQUI
+      importarFicha(e.target.files[0]);
+    }
   });
   bRes.addEventListener('click', () => {
     if (confirm("Tem certeza que deseja apagar esta ficha local?")) {
+      blockAutosave = true; // <-- ADICIONE AQUI
       localStorage.removeItem(STORAGE_KEY);
       alert("Ficha apagada. Recarregando...");
       location.reload();
@@ -2049,7 +2060,6 @@ carregarFicha = async function() {
 
 // --- FIM DO SCRIPT DE SALVAMENTO AUTOMÁTICO DINÂMICO (OFFLINE/LOCAL) ---
 </script>
-
 
 </body>
 </html>
