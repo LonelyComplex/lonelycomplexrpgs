@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Página Inicial</title>
+    <style>
+        /* ===== Reset básico ===== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        /* ===== Corpo da página ===== */
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #111;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* ===== Vídeo de fundo ===== */
+        video#background {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover; /* cobre toda a tela */
+            opacity: 0; /* começa invisível */
+            transition: opacity 0.5s ease-in-out;
+            z-index: 0; /* atrás de tudo */
+        }
+
+        /* ===== Overlay escurecido ===== */
+        .overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.4); /* leve escurecimento */
+            opacity: 0; /* começa invisível junto com o vídeo */
+            transition: opacity 0.5s ease-in-out;
+            z-index: 0; /* fica sobre o vídeo, mas atrás do botão */
+        }
+
+        /* ===== Botão ===== */
+        .botao {
+            position: relative;
+            z-index: 1; /* acima do overlay e do vídeo */
+            padding: 20px 40px;
+            font-size: 2rem;
+            font-family: Arial, sans-serif;
+            color: white;
+            background-color: #33333344;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        /* ===== Efeito Hover ===== */
+        .botao:hover {
+            background-color: #007bffb4; /* azul */
+        }
+
+        /* ===== Cabeçalho (Header) ===== */
+        header {
+            /* Posicionamento e Camada */
+            position: absolute; /* Permite posicionar em relação ao body */
+            top: 10%; /* Ajusta a posição vertical (10% do topo) */
+            width: 100%; /* Ocupa toda a largura para o texto ser centralizado */
+            z-index: 2; /* Fica acima do botão (z-index: 1) */
+
+            /* Estilo de Texto */
+            color: white; /* Cor do texto */
+            font-family: Arial, sans-serif; /* Fonte usada no seu botão */
+            text-align: center; /* **Centraliza o texto horizontalmente** */
+            font-size: 3rem; /* **Aumenta o tamanho da fonte** (ajuste o valor) */
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7); /* Adiciona uma leve sombra para melhor leitura */
+            padding: 20px; /* Espaçamento interno */
+        }
+
+    </style>
+</head>
+<body>
+
+<header>Lista de Fichas</header>    
+
+    <!-- Vídeo de fundo -->
+    <video id="background" autoplay muted loop>
+        <source src="p3aindex.mp4" type="video/mp4">
+        Seu navegador não suporta vídeo em HTML5.
+    </video>
+
+    <!-- Overlay escurecido -->
+    <div class="overlay" id="overlay"></div>
+
+    <!-- Botão -->
+    <button class="botao" id="btn">Persona 3 —Alpha—</button>
+
+    <script>
+        const botao = document.getElementById('btn');
+        const video = document.getElementById('background');
+        const overlay = document.getElementById('overlay');
+
+        // Quando o mouse entra no botão
+        botao.addEventListener('mouseenter', () => {
+            video.style.opacity = '1';
+            overlay.style.opacity = '1'; // mostra o overlay junto
+        });
+
+        // Quando o mouse sai do botão
+        botao.addEventListener('mouseleave', () => {
+            video.style.opacity = '0';
+            overlay.style.opacity = '0'; // esconde o overlay
+        });
+
+        // Quando o botão é clicado
+        botao.addEventListener('click', () => {
+            window.location.href = 'fichap3a.html';
+        });
+    </script>
+</body>
+</html>
