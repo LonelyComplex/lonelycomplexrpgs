@@ -1,0 +1,950 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Legends of Legalya - Ficha de Personagem</title>
+    <link rel="icon" type="image/png" href="loflicon.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=MedievalSharp&family=Lora:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
+
+    <style>
+        /* Estilos gerais */
+        body { 
+            background-color: #3e3c39; 
+            color: #3d2618; 
+            font-family: 'Lora', serif; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            padding: 2em 0; 
+        }
+        
+        .character-sheet { 
+            width: 95%; 
+            max-width: 1400px; 
+            height: 90vh; 
+            background-color: #fdf5e3; 
+            background-image: url('https://www.transparenttextures.com/patterns/old-wall.png'); 
+            border: 3px solid #6b4f3a; 
+            border-radius: 5px; 
+            box-shadow: 0 0 20px rgba(0,0,0,0.7); 
+            display: flex; 
+            overflow: hidden; 
+        }
+        
+        h2, h3 { 
+            font-family: 'MedievalSharp', cursive; 
+            color: #8c1818; 
+            text-align: center; 
+            letter-spacing: 1px; 
+            border-bottom: 2px solid #d4c3a3; 
+            padding-bottom: 0.5em; 
+            margin-bottom: 1em; 
+        }
+        
+        h2 { 
+            font-size: 2em; 
+            margin-top: 1.5em; 
+        }
+        
+        h3 { font-size: 1.5em; color: #3d2618; margin-bottom: 1em; border: none; }
+        label { display: block; margin-bottom: 0.3em; font-weight: 700; font-size: 0.9em; text-transform: uppercase; }
+        input[type="text"], input[type="number"], input[type="url"], textarea { width: 100%; background: none; border: 1px solid #c8b796; border-radius: 4px; font-family: 'Lora', serif; font-size: 1.1em; color: #3d2618; padding: 0.5em; box-sizing: border-box; background-color: rgba(230, 220, 200, 0.1); }
+        textarea { resize: vertical; min-height: 100px; }
+        .side-menu { flex: 0 0 220px; border-right: 2px solid #d4c3a3; padding: 1.5em 0; background-color: rgba(212, 195, 163, 0.1); overflow-y: auto; }
+        .side-menu ul { list-style-type: none; padding: 0; }
+        .side-menu button { width: 100%; padding: 1em 1.5em; background: none; border: none; border-bottom: 1px solid #d4c3a3; font-family: 'MedievalSharp', cursive; font-size: 1.3em; color: #6b4f3a; text-align: left; cursor: pointer; transition: all 0.3s; }
+        .side-menu button:hover { background-color: rgba(212, 195, 163, 0.3); color: #3d2618; }
+        .side-menu button.active { background-color: #ffb30071; color: #8c1818; font-weight: bold; position: relative; right: -2px; }
+        .content-area { flex-grow: 1; padding: 0 2.5em; overflow-y: auto; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        .character-header { display: flex; gap: 2em; margin: 2em 0; }
+        .character-image-section { flex: 0 0 200px; text-align: center; }
+        #character-image-display { width: 200px; height: 200px; background-color: rgba(212, 195, 163, 0.3); border: 2px solid #6b4f3a; border-radius: 5px; object-fit: cover; margin-bottom: 1em; }
+        .character-info-grid { flex-grow: 1; display: grid; grid-template-columns: repeat(3, 1fr); gap: 1em 2em; }
+        .character-info-grid input { border: none; border-bottom: 1px solid #c8b796; border-radius: 0; }
+        .attributes-section { margin-top: 3em; }
+        .attributes-container { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2em; margin-bottom: 2em; }
+        .attribute-header { display: flex; justify-content: space-between; align-items: baseline; font-size: 1.1em; font-weight: bold; margin-bottom: 0.75em; }
+        .attribute-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5em; font-size: 0.9em; }
+        .attribute-row input { width: 8ch; text-align: center; font-size: 1em; padding: 5px; }
+        .total-value { font-weight: bold; background-color: rgba(212, 195, 163, 0.3) !important; border: 1px solid #6b4f3a !important; }
+
+        /* ESTILOS GENÉRICOS PARA ENTRADAS DINÂMICAS */
+        .dynamic-entry { border: 2px solid #d4c3a3; border-radius: 5px; padding: 1em; margin-bottom: 1.5em; position: relative; background-color: rgba(253, 245, 227, 0.2); }
+        .dynamic-entry.sortable-ghost { background-color: rgba(107, 79, 58, 0.3); border-style: dashed; }
+        .entry-controls { position: absolute; top: 5px; right: 8px; display: flex; align-items: center; gap: 5px; }
+        .delete-btn, .minimize-btn, .library-add-btn, .library-remove-btn { width: 25px; height: 25px; background-color: transparent; border-radius: 50%; cursor: pointer; font-family: 'Lora', serif; font-weight: bold; font-size: 1.2em; line-height: 22px; text-align: center; transition: all 0.2s; }
+        .delete-btn, .library-remove-btn { border: 1px solid #8c1818; color: #8c1818; }
+        .delete-btn:hover, .library-remove-btn:hover { background-color: #8c1818; color: #fdf5e3; }
+        .minimize-btn { border: 1px solid #6b4f3a; color: #6b4f3a; font-size: 0.8em; }
+        .minimize-btn:hover { background-color: #6b4f3a; color: #fdf5e3; }
+        .library-add-btn { border: 1px solid #6b4f3a; color: #6b4f3a; font-size: 1.4em; line-height: 20px;}
+        .library-add-btn:hover { background-color: #6b4f3a; color: #fdf5e3; }
+        .drag-handle { cursor: move; color: #c8b796; font-size: 1.5em; padding: 0 5px; }
+        .add-btn-container { text-align: center; margin-top: 1em; }
+        .add-btn { width: 50px; height: 50px; font-size: 2em; background-color: transparent; border: 2px solid #6b4f3a; color: #6b4f3a; border-radius: 50%; cursor: pointer; transition: all 0.2s; }
+        .add-btn:hover { background-color: #6b4f3a; color: #fdf5e3; }
+        .minimized-header { display: none; font-size: 1.1em; padding-bottom: 0.5em; font-weight: bold; }
+        .dynamic-entry.minimized { padding-bottom: 0.5em; }
+        .dynamic-entry.minimized .minimized-header { display: block; }
+        .field label { text-transform: none; font-weight: normal; }
+        .field input, .field textarea { border: none; border-radius: 0; border-bottom: 1px solid #c8b796; padding-left: 0; padding-right: 0; }
+        .field.full-width { grid-column: 1 / -1; }
+        .skill-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1em 2em; }
+        .dynamic-entry.minimized .skill-grid { display: none; }
+        .spell-fields { display: flex; flex-direction: column; gap: 1em; }
+        .dynamic-entry.minimized .spell-fields { display: none; }
+        .equipment-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 1em 2em; }
+        .dynamic-entry.minimized .equipment-grid { display: none; }
+
+        /* Estilos da Biblioteca */
+        .library-section { margin-bottom: 2em; padding-bottom: 1.5em; border-bottom: 1px solid #d4c3a3; }
+        .media-viewer-container {
+            position: relative;
+            width: 100%;
+            height: 450px;
+            overflow: hidden;
+            background-color: rgba(212, 195, 163, 0.3);
+            border: 2px solid #6b4f3a;
+            border-radius: 5px;
+            margin-bottom: 1em;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .media-viewer-container.empty:before { content: "Nenhum item na Biblioteca. Clique em '+' para adicionar um."; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 1.2em; color: #6b4f3a; font-style: italic; text-align: center; }
+        #library-media-viewer, #library-video-viewer { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); max-width: 100%; max-height: 100%; border: none; }
+        #library-media-viewer { object-fit: contain; }
+        #library-media-viewer.hidden, #library-video-viewer.hidden { display: none; }
+        .media-navigation { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; justify-content: space-between; align-items: center; pointer-events: none; }
+        
+        /* --- BOTÕES DE NAVEGAÇÃO DA BIBLIOTECA (AJUSTADOS) --- */
+        .media-navigation button {
+            pointer-events: all;
+            background-color: rgba(107, 79, 58, 0.6);
+            border: none;
+            color: #fdf5e3;
+            cursor: pointer;
+            transition: background-color 0.2s;
+    
+            /* Alterações principais */
+            width: 45px;          /* Largura fixa */
+            height: 45px;         /* Altura fixa */
+            border-radius: 50%;   /* Deixa o botão redondo */
+            font-size: 1.8em;     /* Diminui o tamanho da seta */
+    
+            /* Ajustes de alinhamento */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 0 0 4px 0; /* Pequeno ajuste para centralizar a seta visualmente */
+            line-height: 1;
+        }
+
+        .media-navigation button:hover { background-color: rgba(107, 79, 58, 0.9); }
+        .media-navigation button:disabled { background-color: rgba(107, 79, 58, 0.3); cursor: not-allowed; }
+        .library-controls { position: absolute; top: 8px; right: 8px; display: flex; gap: 8px; z-index: 10; }
+        .library-form-fields { margin-top: 1.5em; display: grid; grid-template-columns: 1fr; gap: 1em; }
+        .library-form-fields .field { margin-bottom: 0; }
+        .library-form-fields textarea { min-height: 80px; }
+        #library-item-list { list-style-type: none; padding: 0; margin-top: 2em; border-top: 1px solid #d4c3a3; padding-top: 1em; max-height: 200px; overflow-y: auto; }
+        #library-item-list li { padding: 0.7em 1em; background-color: rgba(212, 195, 163, 0.1); border-bottom: 1px dashed #d4c3a3; cursor: pointer; transition: background-color 0.2s; font-weight: bold; color: #6b4f3a; }
+        #library-item-list li:last-child { border-bottom: none; }
+        #library-item-list li:hover { background-color: rgba(212, 195, 163, 0.3); color: #3d2618; }
+        #library-item-list li.active { background-color: #d4c3a3; color: #8c1818; font-weight: bold; }
+        #general-library-notes { margin-top: 2em; min-height: 150px; }
+
+          /* --- NOVOS ESTILOS PARA O LAYOUT DA BIBLIOTECA --- */
+        .library-layout {
+            display: flex;
+            gap: 2em; /* Espaçamento entre as colunas */
+            align-items: flex-start; /* Alinha os itens no topo */
+        }
+
+        /* Coluna da Esquerda (Índice) */
+        .library-index-column {
+            flex: 0 0 280px; /* Define uma largura fixa de 280px */
+            border-right: 1px solid #d4c3a3;
+            padding-right: 1.5em;
+            height: 75vh; /* Altura para a coluna */
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Coluna da Direita (Visualizador e Campos) */
+        .library-viewer-column {
+            flex-grow: 1; /* Ocupa todo o espaço restante */
+        }
+
+        /* Ajustes nos elementos que agora estão nas colunas */
+        .library-section {
+            border-bottom: none; /* Remove a borda inferior que não é mais necessária */
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+
+        #library-item-list {
+            flex-grow: 1; /* Faz a lista ocupar o espaço vertical disponível na coluna */
+            max-height: none; /* Remove a altura máxima anterior para permitir o crescimento */
+        }
+
+        /* --- AJUSTE PARA O TAMANHO DO VÍDEO DA BIBLIOTECA --- */
+        #library-video-viewer {
+            width: 100%;
+            height: 100%;
+        }
+
+        /* --- ESTILOS PARA O DRAG AND DROP DA BIBLIOTECA --- */
+        #library-item-list li {
+            display: flex; /* Alinha o "pegador" e o texto lado a lado */
+            align-items: center;
+        }
+
+        .library-drag-handle {
+            cursor: move;
+            color: #a89976;
+            font-size: 1.5em;
+            padding-right: 10px; /* Espaço entre o "pegador" e o título */
+            line-height: 1;
+        }
+
+        /* Estilo para o item fantasma durante o arraste */
+        #library-item-list li.sortable-ghost {
+            background-color: rgba(107, 79, 58, 0.3);
+            border: 1px dashed #6b4f3a;
+        }        
+
+        /* --- ESTILOS PARA A SEÇÃO DE BÔNUS POR NÍVEL --- */
+        .level-bonus-section {
+            display: flex;
+            gap: 3em;
+            padding: 1em 2em;
+            background-color: rgba(212, 195, 163, 0.15);
+            border: 1px solid #d4c3a3;
+            border-radius: 5px;
+        }
+        .level-bonus-column {
+            flex: 1;
+        }
+        .level-bonus-column h3 {
+            margin-top: 0;
+            margin-bottom: 1.5em;
+            border-bottom: 1px solid #d4c3a3;
+        }
+        .bonus-attribute-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1em;
+        }
+        .bonus-attribute-row span {
+            font-weight: bold;
+            color: #6b4f3a;
+        }
+        .bonus-attribute-row input {
+            width: 8ch;
+            text-align: center;
+            font-size: 1.1em;
+        }
+
+        /* --- ESTILOS PARA MINIMIZAR A SEÇÃO DE BÔNUS RACIAIS --- */
+        .racial-bonus-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid #d4c3a3;
+            padding-bottom: 0.5em;
+            margin-bottom: 1em;
+        }
+        .racial-bonus-header h3 {
+            border: none;
+            padding: 0;
+            margin: 0;
+            color: #8c1818;
+            font-family: 'MedievalSharp', cursive;
+            font-size: 1.8em;
+        }
+        #minimize-racial-btn {
+            width: 30px;
+            height: 30px;
+            font-size: 1em;
+            background-color: transparent;
+            border: 1px solid #6b4f3a;
+            color: #6b4f3a;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            line-height: 1;
+        }
+        #minimize-racial-btn:hover {
+            background-color: #6b4f3a;
+            color: #fdf5e3;
+        }
+        .level-bonus-column h4 {
+            margin-top: 0;
+            margin-bottom: 1.5em;
+            border-bottom: 1px solid #d4c3a3;
+            font-family: 'MedievalSharp', cursive;
+            color: #3d2618;
+            font-size: 1.3em;
+            text-align: center;
+        }
+        #racial-bonus-content.minimized {
+            display: none;
+        }        
+
+        /* --- ESTILOS PARA BOTÕES DE SALVAMENTO E SAIR --- */
+        #exit-button {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            background-color: rgba(107, 79, 58, 0.8);
+            color: #fdf5e3;
+            border: 1px solid #d4c3a3;
+            font-family: 'MedievalSharp', cursive;
+            font-size: 1.2em;
+            padding: 8px 18px;
+            border-radius: 5px;
+            cursor: pointer;
+            z-index: 1000;
+            transition: all 0.2s;
+        }
+        #exit-button:hover {
+            background-color: #8c1818;
+            box-shadow: 0 0 10px rgba(0,0,0,0.5);
+        }
+
+        #save-controls {
+            position: fixed;
+            bottom: 15px;
+            right: 15px;
+            display: flex;
+            gap: 10px;
+            background-color: rgba(61, 38, 24, 0.85);
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid #d4c3a3;
+            z-index: 1000;
+        }
+        #save-controls button {
+            background-color: #6b4f3a;
+            color: #fdf5e3;
+            border: 1px solid #d4c3a3;
+            padding: 5px 15px;
+            font-family: 'Lora', serif;
+            font-weight: bold;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        #save-controls button:hover {
+            background-color: #8c1818;
+        }
+
+    </style>
+</head>
+<body>
+    <button id="exit-button">Sair</button>
+
+    <div id="save-controls">
+        <button id="btn-exportar">Exportar</button>
+        <button id="btn-importar">Importar</button>
+        <button id="btn-resetar">Resetar</button>
+        <input type="file" id="input-importar" style="display:none" accept=".json"/>
+    </div>
+
+    <main class="character-sheet">
+        <nav class="side-menu">
+            <ul>
+                <li><button class="tab-button active" data-tab="personagem">Personagem</button></li>
+                <li><button class="tab-button" data-tab="equipamentos">Equipamentos</button></li>
+                <li><button class="tab-button" data-tab="habilidades">Habilidades</button></li>
+                <li><button class="tab-button" data-tab="magias">Magias</button></li>
+                <li><button class="tab-button" data-tab="verso">Verso</button></li>
+                <li><button class="tab-button" data-tab="biblioteca">Biblioteca</button></li>
+            </ul>
+        </nav>
+
+        <div class="content-area">
+            
+            <div id="personagem" class="tab-content active">
+                <h2>Legends of Legalya</h2>
+                <div class="character-header">
+                    <div class="character-image-section">
+                        <img id="character-image-display" src="" alt="Imagem do Personagem">
+                        <label for="character-image-url">Link da Imagem</label>
+                        <input type="url" id="character-image-url" style="text-align: center;" data-field="character_image_url">
+                    </div>
+                    <div class="character-info-grid">
+                        <div><label>Nome do Personagem</label><input type="text" data-field="character_name"></div>
+                        <div><label>Classe</label><input type="text" data-field="character_class"></div>
+                        <div><label>Nível</label><input type="text" id="character-level" value="1" data-field="character_level"></div>
+                        <div><label>Raça</label><input type="text" data-field="character_race"></div>
+                        <div><label>Sexo</label><input type="text" data-field="character_sex"></div>
+                        <div><label>Idade</label><input type="text" data-field="character_age"></div>
+                        <div style="grid-column: 1 / -1;"><label>Nome do Jogador</label><input type="text" data-field="player_name"></div>
+                    </div>
+                </div>
+                <section class="attributes-section">
+                    <h3>Atributos Físicos</h3>
+                    <div class="attributes-container">
+                        <div class="attribute-column">
+                            <div class="attribute-header"><span class="attribute-name">Força</span><span class="attribute-abbr">(FOR)</span></div>
+                            <div class="attribute-input-group">
+                                <div class="attribute-row"><span>Bônus Racial</span><input type="text" id="for-racial" value="0" readonly></div>
+                                <div class="attribute-row"><span>Base</span><input type="number" id="for-base" value="10" oninput="calculateTotal('for')" data-field="for_base"></div>
+                                <div class="attribute-row"><span>Acr. Itens</span><input type="number" id="for-itens" value="0" oninput="calculateTotal('for')" data-field="for_itens"></div>
+                                <div class="attribute-row"><strong>Valor Total</strong><input type="text" id="for-total" class="total-value" readonly></div>
+                            </div>
+                        </div>
+                        <div class="attribute-column">
+                            <div class="attribute-header"><span class="attribute-name">Destreza</span><span class="attribute-abbr">(DES)</span></div>
+                            <div class="attribute-input-group">
+                                <div class="attribute-row"><span>Bônus Racial</span><input type="text" id="des-racial" value="0" readonly></div>
+                                <div class="attribute-row"><span>Base</span><input type="number" id="des-base" value="10" oninput="calculateTotal('des')" data-field="des_base"></div>
+                                <div class="attribute-row"><span>Acr. Itens</span><input type="number" id="des-itens" value="0" oninput="calculateTotal('des')" data-field="des_itens"></div>
+                                <div class="attribute-row"><strong>Valor Total</strong><input type="text" id="des-total" class="total-value" readonly></div>
+                            </div>
+                        </div>
+                        <div class="attribute-column">
+                            <div class="attribute-header"><span class="attribute-name">Constituição</span><span class="attribute-abbr">(CON)</span></div>
+                            <div class="attribute-input-group">
+                                <div class="attribute-row"><span>Bônus Racial</span><input type="text" id="con-racial" value="0" readonly></div>
+                                <div class="attribute-row"><span>Base</span><input type="number" id="con-base" value="10" oninput="calculateTotal('con')" data-field="con_base"></div>
+                                <div class="attribute-row"><span>Acr. Itens</span><input type="number" id="con-itens" value="0" oninput="calculateTotal('con')" data-field="con_itens"></div>
+                                <div class="attribute-row"><strong>Valor Total</strong><input type="text" id="con-total" class="total-value" readonly></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <h3>Atributos Mentais</h3>
+                    <div class="attributes-container">
+                        <div class="attribute-column">
+                            <div class="attribute-header"><span class="attribute-name">Inteligência</span><span class="attribute-abbr">(INT)</span></div>
+                            <div class="attribute-input-group">
+                                <div class="attribute-row"><span>Bônus Racial</span><input type="text" id="int-racial" value="0" readonly></div>
+                                <div class="attribute-row"><span>Base</span><input type="number" id="int-base" value="10" oninput="calculateTotal('int')" data-field="int_base"></div>
+                                <div class="attribute-row"><span>Acr. Itens</span><input type="number" id="int-itens" value="0" oninput="calculateTotal('int')" data-field="int_itens"></div>
+                                <div class="attribute-row"><strong>Valor Total</strong><input type="text" id="int-total" class="total-value" readonly></div>
+                            </div>
+                        </div>
+                        <div class="attribute-column">
+                            <div class="attribute-header"><span class="attribute-name">Sabedoria</span><span class="attribute-abbr">(SAB)</span></div>
+                            <div class="attribute-input-group">
+                                <div class="attribute-row"><span>Bônus Racial</span><input type="text" id="sab-racial" value="0" readonly></div>
+                                <div class="attribute-row"><span>Base</span><input type="number" id="sab-base" value="10" oninput="calculateTotal('sab')" data-field="sab_base"></div>
+                                <div class="attribute-row"><span>Acr. Itens</span><input type="number" id="sab-itens" value="0" oninput="calculateTotal('sab')" data-field="sab_itens"></div>
+                                <div class="attribute-row"><strong>Valor Total</strong><input type="text" id="sab-total" class="total-value" readonly></div>
+                            </div>
+                        </div>
+                        <div class="attribute-column">
+                            <div class="attribute-header"><span class="attribute-name">Carisma</span><span class="attribute-abbr">(CAR)</span></div>
+                            <div class="attribute-input-group">
+                                <div class="attribute-row"><span>Bônus Racial</span><input type="text" id="car-racial" value="0" readonly></div>
+                                <div class="attribute-row"><span>Base</span><input type="number" id="car-base" value="10" oninput="calculateTotal('car')" data-field="car_base"></div>
+                                <div class="attribute-row"><span>Acr. Itens</span><input type="number" id="car-itens" value="0" oninput="calculateTotal('car')" data-field="car_itens"></div>
+                                <div class="attribute-row"><strong>Valor Total</strong><input type="text" id="car-total" class="total-value" readonly></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="racial-bonus-header" style="margin-top: 3em;">
+                        <h3>Bônus Raciais & Progressão</h3>
+                        <button id="minimize-racial-btn" title="Minimizar Seção">▲</button>
+                    </div>
+                    <div id="racial-bonus-content" class="level-bonus-section">
+                        <div class="level-bonus-column">
+                            <h4>Bônus de 1º Nível</h4>
+                            <div class="bonus-attribute-row"><span>Força (FOR)</span><input type="number" id="lvl1-for-bonus" class="level-bonus-input" value="0" data-field="lvl1_for_bonus"></div>
+                            <div class="bonus-attribute-row"><span>Destreza (DES)</span><input type="number" id="lvl1-des-bonus" class="level-bonus-input" value="0" data-field="lvl1_des_bonus"></div>
+                            <div class="bonus-attribute-row"><span>Constituição (CON)</span><input type="number" id="lvl1-con-bonus" class="level-bonus-input" value="0" data-field="lvl1_con_bonus"></div>
+                            <div class="bonus-attribute-row"><span>Inteligência (INT)</span><input type="number" id="lvl1-int-bonus" class="level-bonus-input" value="0" data-field="lvl1_int_bonus"></div>
+                            <div class="bonus-attribute-row"><span>Sabedoria (SAB)</span><input type="number" id="lvl1-sab-bonus" class="level-bonus-input" value="0" data-field="lvl1_sab_bonus"></div>
+                            <div class="bonus-attribute-row"><span>Carisma (CAR)</span><input type="number" id="lvl1-car-bonus" class="level-bonus-input" value="0" data-field="lvl1_car_bonus"></div>
+                        </div>
+                        <div class="level-bonus-column">
+                            <h4>Bônus por Nível</h4>
+                            <div class="bonus-attribute-row"><span>Força (FOR)</span><input type="number" id="perlvl-for-bonus" class="level-bonus-input" value="0" data-field="perlvl_for_bonus"></div>
+                            <div class="bonus-attribute-row"><span>Destreza (DES)</span><input type="number" id="perlvl-des-bonus" class="level-bonus-input" value="0" data-field="perlvl_des_bonus"></div>
+                            <div class="bonus-attribute-row"><span>Constituição (CON)</span><input type="number" id="perlvl-con-bonus" class="level-bonus-input" value="0" data-field="perlvl_con_bonus"></div>
+                            <div class="bonus-attribute-row"><span>Inteligência (INT)</span><input type="number" id="perlvl-int-bonus" class="level-bonus-input" value="0" data-field="perlvl_int_bonus"></div>
+                            <div class="bonus-attribute-row"><span>Sabedoria (SAB)</span><input type="number" id="perlvl-sab-bonus" class="level-bonus-input" value="0" data-field="perlvl_sab_bonus"></div>
+                            <div class="bonus-attribute-row"><span>Carisma (CAR)</span><input type="number" id="perlvl-car-bonus" class="level-bonus-input" value="0" data-field="perlvl_car_bonus"></div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <div id="equipamentos" class="tab-content">
+                <h2>Legends of Legalya</h2>
+                <h3 style="border-bottom: 1px solid #d4c3a3; padding-bottom: 0.5em;">Equipamento</h3>
+                <div id="equipment-container"></div>
+                <div class="add-btn-container">
+                    <button id="add-equipment-btn" class="add-btn">+</button>
+                </div>
+            </div>
+
+            <div id="habilidades" class="tab-content">
+                <h2>Legends of Legalya</h2>
+                <h3 style="border-bottom: 1px solid #d4c3a3; padding-bottom: 0.5em;">Habilidades</h3>
+                <div id="skills-container"></div>
+                <div class="add-btn-container">
+                    <button id="add-skill-btn" class="add-btn">+</button>
+                </div>
+            </div>
+
+            <div id="magias" class="tab-content">
+                <h2>Legends of Legalya</h2>
+                <h3 style="border-bottom: 1px solid #d4c3a3; padding-bottom: 0.5em;">Magias</h3>
+                <div id="spells-container"></div>
+                <div class="add-btn-container">
+                    <button id="add-spell-btn" class="add-btn">+</button>
+                </div>
+            </div>
+            
+            <div id="verso" class="tab-content">
+                <h2>Legends of Legalya</h2>
+                <h3 style="border-bottom: 1px solid #d4c3a3; padding-bottom: 0.5em;">História do Personagem</h3>
+                <textarea placeholder="Conte a história do seu personagem, suas origens, motivações e objetivos..." data-field="character_story"></textarea>
+                <h3 style="margin-top: 2em; border-bottom: 1px solid #d4c3a3; padding-bottom: 0.5em;">Anotações da Campanha</h3>
+                <textarea placeholder="Faça anotações sobre a aventura, NPCs importantes, lugares visitados e eventos marcantes..." data-field="campaign_notes"></textarea>
+            </div>
+
+            <div id="biblioteca" class="tab-content">
+                <h2>Legends of Legalya</h2>    
+                <div class="library-layout">
+
+                    <div class="library-index-column">
+                        <div class="library-section">
+                            <h3 style="border-bottom: 1px solid #d4c3a3; padding-bottom: 0.5em;">Índice da Biblioteca</h3>
+                            <ul id="library-item-list"></ul>
+                        </div>
+                    </div>
+
+                    <div class="library-viewer-column">
+                        <div class="library-section">
+                            <div class="field"><label>Título do Item</label><input type="text" id="library-item-title"></div>
+                            <div class="media-viewer-container empty">
+                                <div class="library-controls">
+                                    <button id="add-library-item-btn" class="library-add-btn" title="Adicionar novo item">+</button>
+                                    <button id="remove-library-item-btn" class="library-remove-btn" title="Remover item atual">-</button>
+                                </div>
+                                <img id="library-media-viewer" class="hidden" src="" alt="Mídia da Biblioteca">
+                                <iframe id="library-video-viewer" class="hidden" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                                <div class="media-navigation">
+                                    <button id="prev-media-btn">&lt;</button>
+                                    <button id="next-media-btn">&gt;</button>
+                                </div>
+                            </div>
+                            <div class="library-form-fields">
+                                <div class="field"><label>URL da Imagem/Vídeo</label><input type="url" id="library-media-url"></div>
+                                <div class="field"><label>Descrição do Item</label><textarea id="library-item-description" rows="3"></textarea></div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+<script>
+        // --- VARIÁVEIS GLOBAIS ---
+        // Variáveis da biblioteca, agora em um único lugar.
+        let libraryItems = [];
+        let currentLibraryIndex = -1;
+
+        // --- FUNÇÕES DE CRIAÇÃO DE ENTRADAS (MOVIMOS PARA CÁ) ---
+        // Estas funções agora são globais e podem ser acessadas por qualquer outra parte do script.
+        function addSkillEntry() {
+            const skillsContainer = document.getElementById('skills-container');
+            const newEntry = document.createElement('div');
+            newEntry.className = 'dynamic-entry';
+            newEntry.innerHTML = `<div class="entry-controls"><div class="drag-handle">⠿</div><button class="minimize-btn">▲</button><button class="delete-btn">-</button></div><div class="minimized-header"></div><div class="skill-grid"><div class="field entry-name"><label>Nome:</label><input type="text"></div><div class="field"><label>Tipo:</label><input type="text"></div><div class="field"><label>Alcance:</label><input type="text"></div><div class="field"><label>Custo:</label><input type="text"></div><div class="field"><label>Bônus Mod.:</label><input type="text"></div><div class="field full-width"><label>Descrição:</label><textarea rows="2"></textarea></div></div>`;
+            skillsContainer.appendChild(newEntry);
+        }
+
+        function addSpellEntry() {
+            const spellsContainer = document.getElementById('spells-container');
+            const newEntry = document.createElement('div');
+            newEntry.className = 'dynamic-entry';
+            newEntry.innerHTML = `<div class="entry-controls"><div class="drag-handle">⠿</div><button class="minimize-btn">▲</button><button class="delete-btn">-</button></div><div class="minimized-header"></div><div class="spell-fields"><div class="field entry-name"><label>Nome:</label><input type="text"></div><div class="field"><label>Descrição:</label><textarea rows="3"></textarea></div></div>`;
+            spellsContainer.appendChild(newEntry);
+        }
+
+        function addEquipmentEntry() {
+            const equipmentContainer = document.getElementById('equipment-container');
+            const newEntry = document.createElement('div');
+            newEntry.className = 'dynamic-entry';
+            newEntry.innerHTML = `<div class="entry-controls"><div class="drag-handle">⠿</div><button class="minimize-btn">▲</button><button class="delete-btn">-</button></div><div class="minimized-header"></div><div class="equipment-grid"><div class="field entry-name"><label>Nome:</label><input type="text"></div><div class="field"><label>Raridade:</label><input type="text"></div><div class="field full-width"><label>Descrição:</label><textarea rows="2"></textarea></div></div>`;
+            equipmentContainer.appendChild(newEntry);
+        }
+
+        // --- LÓGICA DE CÁLCULO DE ATRIBUTOS ---
+        const attributes = ['for', 'des', 'con', 'int', 'sab', 'car'];
+
+        function calculateTotal(attributePrefix) {
+            const racial = parseInt(document.getElementById(attributePrefix + '-racial').value) || 0;
+            const base = parseInt(document.getElementById(attributePrefix + '-base').value) || 0;
+            const itens = parseInt(document.getElementById(attributePrefix + '-itens').value) || 0;
+            document.getElementById(attributePrefix + '-total').value = racial + base + itens;
+        }
+
+        function updateAllRacialBonuses() {
+            const levelInput = document.getElementById('character-level');
+            const characterLevel = parseInt(levelInput.value) || 1;
+            const levelMultiplier = (characterLevel > 1) ? characterLevel - 1 : 0;
+
+            attributes.forEach(attr => {
+                const firstLevelBonus = parseInt(document.getElementById(`lvl1-${attr}-bonus`).value) || 0;
+                const perLevelBonus = parseInt(document.getElementById(`perlvl-${attr}-bonus`).value) || 0;
+                const totalRacialBonus = firstLevelBonus + (perLevelBonus * levelMultiplier);
+                document.getElementById(`${attr}-racial`).value = totalRacialBonus;
+                calculateTotal(attr);
+            });
+        }
+
+        // --- LÓGICA DA BIBLIOTECA ---
+        function displayCurrentLibraryItem() {
+            const libraryItemTitle = document.getElementById('library-item-title');
+            const libraryMediaURL = document.getElementById('library-media-url');
+            const libraryItemDescription = document.getElementById('library-item-description');
+            const libraryMediaViewer = document.getElementById('library-media-viewer');
+            const libraryVideoViewer = document.getElementById('library-video-viewer');
+            const mediaViewerContainer = document.querySelector('.media-viewer-container');
+            const prevMediaBtn = document.getElementById('prev-media-btn');
+            const nextMediaBtn = document.getElementById('next-media-btn');
+            const removeLibraryItemBtn = document.getElementById('remove-library-item-btn');
+
+            libraryMediaViewer.classList.add('hidden');
+            libraryVideoViewer.classList.add('hidden');
+            
+            if (libraryItems.length === 0) {
+                mediaViewerContainer.classList.add('empty');
+                currentLibraryIndex = -1;
+                libraryItemTitle.value = '';
+                libraryMediaURL.value = '';
+                libraryItemDescription.value = '';
+                prevMediaBtn.disabled = true;
+                nextMediaBtn.disabled = true;
+                removeLibraryItemBtn.disabled = true;
+            } else {
+                mediaViewerContainer.classList.remove('empty');
+                if (currentLibraryIndex < 0) currentLibraryIndex = 0;
+                if (currentLibraryIndex >= libraryItems.length) currentLibraryIndex = libraryItems.length - 1;
+                
+                const item = libraryItems[currentLibraryIndex];
+                libraryItemTitle.value = item.title;
+                libraryMediaURL.value = item.url;
+                libraryItemDescription.value = item.description;
+                libraryMediaViewer.src = '';
+                libraryVideoViewer.src = '';
+
+                if (item.type === 'video') {
+                    libraryVideoViewer.src = item.embedUrl;
+                    libraryVideoViewer.classList.remove('hidden');
+                } else {
+                    libraryMediaViewer.src = item.url;
+                    libraryMediaViewer.classList.remove('hidden');
+                }
+            }
+            updateNavigationButtons();
+            updateLibraryItemList();
+        }
+
+        function updateNavigationButtons() {
+            const prevMediaBtn = document.getElementById('prev-media-btn');
+            const nextMediaBtn = document.getElementById('next-media-btn');
+            const removeLibraryItemBtn = document.getElementById('remove-library-item-btn');
+            prevMediaBtn.disabled = (currentLibraryIndex <= 0);
+            nextMediaBtn.disabled = (currentLibraryIndex >= libraryItems.length - 1);
+            removeLibraryItemBtn.disabled = (libraryItems.length === 0);
+        }
+
+        function updateLibraryItemList() {
+            const libraryItemList = document.getElementById('library-item-list');
+            libraryItemList.innerHTML = '';
+            libraryItems.forEach((item, index) => {
+                const li = document.createElement('li');
+                li.innerHTML = `<span class="library-drag-handle">⠿</span><span>${item.title || `Item Sem Título (${index + 1})`}</span>`;
+                li.dataset.index = index;
+                if (index === currentLibraryIndex) {
+                    li.classList.add('active');
+                }
+                libraryItemList.appendChild(li);
+            });
+        }
+
+        function isYouTubeVideo(url) { return url.includes('youtube.com/watch?v=') || url.includes('youtu.be/'); }
+        function getYouTubeVideoId(url) { let videoId = ''; if (url.includes('youtube.com/watch?v=')) { videoId = url.split('v=')[1]; const ampersandPosition = videoId.indexOf('&'); if (ampersandPosition !== -1) { videoId = videoId.substring(0, ampersandPosition); } } else if (url.includes('youtu.be/')) { videoId = url.split('youtu.be/')[1]; const questionMarkPosition = videoId.indexOf('?'); if (questionMarkPosition !== -1) { videoId = videoId.substring(0, questionMarkPosition); } } return videoId; }
+
+
+        // --- LÓGICA DE SALVAMENTO (Storage) ---
+        const params = new URLSearchParams(window.location.search);
+        const fichaId = params.get('id') || 'lofl-ficha-default';
+        const STORAGE_KEY = `lofl-ficha:${fichaId}`;
+        let saveTimer;
+
+        function serializarListaDinamica(containerId) {
+            const container = document.getElementById(containerId);
+            if (!container) return [];
+            const items = [];
+            container.querySelectorAll('.dynamic-entry').forEach(entry => {
+                const itemData = {};
+                entry.querySelectorAll('input[type="text"], input[type="number"], textarea').forEach(field => {
+                    const label = field.previousElementSibling?.textContent.replace(':', '').trim() || field.closest('.field').querySelector('label')?.textContent.trim() || 'valor';
+                    const key = label.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, '_');
+                    itemData[key] = field.value;
+                });
+                itemData.minimized = entry.classList.contains('minimized');
+                items.push(itemData);
+            });
+            return items;
+        }
+
+        function carregarListaDinamica(containerId, itemsData, creationFunction) {
+            const container = document.getElementById(containerId);
+            if (!container || !itemsData) return;
+            container.innerHTML = '';
+            itemsData.forEach(itemData => {
+                creationFunction(); // Agora isso funciona!
+                const newEntry = container.lastElementChild;
+                if (newEntry) {
+                    Object.entries(itemData).forEach(([key, value]) => {
+                        if (key === 'minimized') {
+                            if (value) {
+                                const minimizeBtn = newEntry.querySelector('.minimize-btn');
+                                if (minimizeBtn) minimizeBtn.click();
+                            }
+                            return;
+                        }
+                        newEntry.querySelectorAll('input[type="text"], input[type="number"], textarea').forEach(field => {
+                            const label = field.previousElementSibling?.textContent.replace(':', '').trim() || field.closest('.field').querySelector('label')?.textContent.trim() || 'valor';
+                            const fieldKey = label.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, '_');
+                            if (fieldKey === key) {
+                                field.value = value;
+                                if (field.closest('.entry-name')) {
+                                    const header = newEntry.querySelector('.minimized-header');
+                                    if (header) header.textContent = value || 'Entrada Sem Nome';
+                                }
+                            }
+                        });
+                    });
+                }
+            });
+        }
+
+        function salvarFichaCompleta() {
+            try {
+                const dadosParaSalvar = {};
+                document.querySelectorAll('[data-field]').forEach(element => {
+                    dadosParaSalvar[element.dataset.field] = element.value;
+                });
+                dadosParaSalvar.equipamentos = serializarListaDinamica('equipment-container');
+                dadosParaSalvar.habilidades = serializarListaDinamica('skills-container');
+                dadosParaSalvar.magias = serializarListaDinamica('spells-container');
+                dadosParaSalvar.biblioteca = libraryItems || [];
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(dadosParaSalvar));
+                console.log('[LOFL] Ficha salva com sucesso!');
+            } catch (err) {
+                console.error('[LOFL] Falha ao salvar ficha:', err);
+            }
+        }
+
+        function carregarFicha() {
+            const json = localStorage.getItem(STORAGE_KEY);
+            if (!json) {
+                // Se não houver ficha salva, cria as entradas iniciais
+                for (let i = 0; i < 4; i++) { addSkillEntry(); addSpellEntry(); addEquipmentEntry(); }
+                return;
+            }
+            try {
+                const dados = JSON.parse(json);
+                document.querySelectorAll('[data-field]').forEach(element => {
+                    if (dados[element.dataset.field] !== undefined) {
+                        element.value = dados[element.dataset.field];
+                        element.dispatchEvent(new Event('input', { bubbles: true }));
+                    }
+                });
+                // A chamada agora passa a função diretamente, sem 'window.'
+                carregarListaDinamica('equipment-container', dados.equipamentos, addEquipmentEntry);
+                carregarListaDinamica('skills-container', dados.habilidades, addSkillEntry);
+                carregarListaDinamica('spells-container', dados.magias, addSpellEntry);
+
+                if (dados.biblioteca) {
+                    libraryItems = dados.biblioteca;
+                    displayCurrentLibraryItem();
+                }
+                console.log('[LOFL] Ficha carregada com sucesso!');
+            } catch (err) {
+                console.error('[LOFL] Falha ao carregar ficha:', err);
+            }
+        }
+
+        function triggerSave() {
+            clearTimeout(saveTimer);
+            saveTimer = setTimeout(salvarFichaCompleta, 1500);
+        }
+
+        function exportarFicha() {
+            salvarFichaCompleta();
+            const json = localStorage.getItem(STORAGE_KEY);
+            if (!json) { alert("Nenhum dado salvo para exportar."); return; }
+            const blob = new Blob([json], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${fichaId}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        function importarFicha(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    localStorage.setItem(STORAGE_KEY, e.target.result);
+                    alert("Ficha importada! A página será recarregada.");
+                    location.reload();
+                } catch (err) {
+                    alert("Ocorreu um erro ao importar a ficha.");
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        function resetarFicha() {
+            if (confirm("ATENÇÃO: Isso apagará PERMANENTEMENTE todos os dados desta ficha. Deseja continuar?")) {
+                localStorage.removeItem(STORAGE_KEY);
+                alert("Ficha resetada. A página será recarregada.");
+                location.reload();
+            }
+        }
+
+
+        // --- EVENT LISTENERS E INICIALIZAÇÃO ---
+        document.addEventListener('DOMContentLoaded', function() {
+            // Lógica das Abas
+            document.querySelectorAll('.tab-button').forEach(button => {
+                button.addEventListener('click', () => {
+                    document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
+                    document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+                    button.classList.add('active');
+                    document.getElementById(button.getAttribute('data-tab')).classList.add('active');
+                });
+            });
+
+            // Lógica da Imagem do Personagem
+            document.getElementById('character-image-url').addEventListener('input', (e) => {
+                if(e.target.value) { document.getElementById('character-image-display').src = e.target.value; }
+            });
+            
+            // Ativa o SortableJS para as listas
+            new Sortable(document.getElementById('skills-container'), { animation: 150, handle: '.drag-handle', ghostClass: 'sortable-ghost' });
+            new Sortable(document.getElementById('spells-container'), { animation: 150, handle: '.drag-handle', ghostClass: 'sortable-ghost' });
+            new Sortable(document.getElementById('equipment-container'), { animation: 150, handle: '.drag-handle', ghostClass: 'sortable-ghost' });
+            new Sortable(document.getElementById('library-item-list'), {
+                animation: 150, handle: '.library-drag-handle', ghostClass: 'sortable-ghost',
+                onEnd: function (evt) {
+                    const [movedItem] = libraryItems.splice(evt.oldIndex, 1);
+                    libraryItems.splice(evt.newIndex, 0, movedItem);
+                    updateLibraryItemList();
+                }
+            });
+
+            // Listeners para os botões de adicionar
+            document.getElementById('add-skill-btn').addEventListener('click', addSkillEntry);
+            document.getElementById('add-spell-btn').addEventListener('click', addSpellEntry);
+            document.getElementById('add-equipment-btn').addEventListener('click', addEquipmentEntry);
+
+            // Listener genérico para deletar e minimizar
+            document.querySelector('.content-area').addEventListener('click', function(event) {
+                const target = event.target;
+                const entry = target.closest('.dynamic-entry');
+                if (!entry) return;
+                if (target.classList.contains('delete-btn')) { entry.remove(); triggerSave(); }
+                if (target.classList.contains('minimize-btn')) {
+                    entry.classList.toggle('minimized');
+                    target.innerHTML = entry.classList.contains('minimized') ? '▼' : '▲';
+                    const entryNameInput = entry.querySelector('.entry-name input');
+                    if (entryNameInput) { entry.querySelector('.minimized-header').textContent = entryNameInput.value || 'Entrada Sem Nome'; }
+                }
+            });
+
+            // Listeners da Biblioteca
+            document.getElementById('add-library-item-btn').addEventListener('click', function() {
+                const newItem = { title: "Novo Item", url: "", description: "", type: "image", embedUrl: "" };
+                libraryItems.push(newItem);
+                currentLibraryIndex = libraryItems.length - 1;
+                displayCurrentLibraryItem();
+                document.getElementById('library-item-title').focus();
+            });
+            document.getElementById('remove-library-item-btn').addEventListener('click', function() {
+                if (currentLibraryIndex > -1 && confirm('Tem certeza que deseja remover este item da biblioteca?')) {
+                    libraryItems.splice(currentLibraryIndex, 1);
+                    if (currentLibraryIndex >= libraryItems.length) { currentLibraryIndex = libraryItems.length - 1; }
+                    displayCurrentLibraryItem();
+                }
+            });
+            document.getElementById('prev-media-btn').addEventListener('click', () => { if (currentLibraryIndex > 0) { currentLibraryIndex--; displayCurrentLibraryItem(); } });
+            document.getElementById('next-media-btn').addEventListener('click', () => { if (currentLibraryIndex < libraryItems.length - 1) { currentLibraryIndex++; displayCurrentLibraryItem(); } });
+            document.getElementById('library-item-list').addEventListener('click', function(event) { const li = event.target.closest('li'); if (li) { currentLibraryIndex = parseInt(li.dataset.index); displayCurrentLibraryItem(); } });
+            document.getElementById('library-item-title').addEventListener('input', function() { if (currentLibraryIndex > -1) { libraryItems[currentLibraryIndex].title = this.value; updateLibraryItemList(); } });
+            document.getElementById('library-item-description').addEventListener('input', function() { if (currentLibraryIndex > -1) { libraryItems[currentLibraryIndex].description = this.value; } });
+            document.getElementById('library-media-url').addEventListener('input', function() {
+                if (currentLibraryIndex > -1) {
+                    const newUrl = this.value.trim();
+                    libraryItems[currentLibraryIndex].url = newUrl;
+                    let type = 'image', embedUrl = newUrl;
+                    if (isYouTubeVideo(newUrl)) { type = 'video'; const videoId = getYouTubeVideoId(newUrl); embedUrl = `https://www.youtube.com/embed/${videoId}`; }
+                    libraryItems[currentLibraryIndex].type = type;
+                    libraryItems[currentLibraryIndex].embedUrl = embedUrl;
+                    displayCurrentLibraryItem();
+                }
+            });
+
+            // Listeners da seção de Bônus Raciais
+            document.getElementById('minimize-racial-btn').addEventListener('click', (e) => {
+                const content = document.getElementById('racial-bonus-content');
+                content.classList.toggle('minimized');
+                e.target.innerHTML = content.classList.contains('minimized') ? '▼' : '▲';
+            });
+            document.getElementById('character-level').addEventListener('input', updateAllRacialBonuses);
+            document.querySelectorAll('.level-bonus-input').forEach(input => {
+                input.addEventListener('input', updateAllRacialBonuses);
+            });
+            
+            // Listeners dos controles de salvar/carregar
+            document.querySelector('.content-area').addEventListener('input', triggerSave);
+            document.getElementById('btn-exportar').addEventListener('click', exportarFicha);
+            document.getElementById('btn-importar').addEventListener('click', () => document.getElementById('input-importar').click());
+            document.getElementById('input-importar').addEventListener('change', importarFicha);
+            document.getElementById('btn-resetar').addEventListener('click', resetarFicha);
+            document.getElementById('exit-button').addEventListener('click', () => { 
+                if (confirm("Deseja sair da ficha? Certifique-se de que seu progresso foi salvo.")) { 
+                    window.location.href = "index.html"; 
+                } 
+            });
+
+
+            // Inicialização da Ficha
+            updateAllRacialBonuses();
+            carregarFicha();
+            displayCurrentLibraryItem(); // Garante que a biblioteca inicie corretamente
+        });
+    </script>
+
+</body>
+</html>
