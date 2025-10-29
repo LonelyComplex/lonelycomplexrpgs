@@ -5,6 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Página Inicial</title>
     <link rel="icon" type="image/png" href="indexicon.png">
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=MedievalSharp&display=swap" rel="stylesheet">
+
     <style>
         /* ===== Reset básico ===== */
         * {
@@ -24,8 +29,8 @@
             position: relative;
         }
 
-        /* ===== Vídeo de fundo ===== */
-        video#background {
+        /* ===== Vídeos de fundo (AGORA UMA CLASSE) ===== */
+        .background-video {
             position: absolute;
             top: 0;
             left: 0;
@@ -50,41 +55,64 @@
             z-index: 0; /* fica sobre o vídeo, mas atrás do botão */
         }
 
-        /* ===== Botão ===== */
-        .botao {
+        /* ===== Container dos Botões ===== */
+        .button-container {
             position: relative;
             z-index: 1; /* acima do overlay e do vídeo */
+            display: flex;
+            flex-direction: column;
+            gap: 20px; /* Espaçamento entre os botões */
+        }
+
+        /* ===== Estilo Base para os Botões ===== */
+        .botao {
             padding: 20px 40px;
             font-size: 2rem;
-            font-family: Arial, sans-serif;
             color: white;
-            background-color: #33333344;
             border: none;
             border-radius: 8px;
             cursor: pointer;
-            transition: background-color 0.3s;
+            transition: all 0.3s;
+            text-align: center;
         }
 
-        /* ===== Efeito Hover ===== */
-        .botao:hover {
+        /* ===== Botão Persona 3 ===== */
+        #btn-p3 {
+            font-family: Arial, sans-serif;
+            background-color: #33333344;
+        }
+
+        #btn-p3:hover {
             background-color: #007bffb4; /* azul */
         }
 
+        /* ===== Botão Legends of Legalya ===== */
+        #btn-lofl {
+            font-family: 'MedievalSharp', cursive;
+            background-color: transparent;
+            color: #d4c3a3;
+            border: 2px solid #6b4f3a;
+            font-size: 2.2rem;
+        }
+
+        #btn-lofl:hover {
+            background-color: rgba(107, 79, 58, 0.4);
+            color: #fdf5e3;
+        }
+
+
         /* ===== Cabeçalho (Header) ===== */
         header {
-            /* Posicionamento e Camada */
-            position: absolute; /* Permite posicionar em relação ao body */
-            top: 10%; /* Ajusta a posição vertical (10% do topo) */
-            width: 100%; /* Ocupa toda a largura para o texto ser centralizado */
-            z-index: 2; /* Fica acima do botão (z-index: 1) */
-
-            /* Estilo de Texto */
-            color: white; /* Cor do texto */
-            font-family: Arial, sans-serif; /* Fonte usada no seu botão */
-            text-align: center; /* **Centraliza o texto horizontalmente** */
-            font-size: 3rem; /* **Aumenta o tamanho da fonte** (ajuste o valor) */
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7); /* Adiciona uma leve sombra para melhor leitura */
-            padding: 20px; /* Espaçamento interno */
+            position: absolute;
+            top: 10%;
+            width: 100%;
+            z-index: 2;
+            color: white;
+            font-family: Arial, sans-serif;
+            text-align: center;
+            font-size: 3rem;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
+            padding: 20px;
         }
 
     </style>
@@ -93,40 +121,61 @@
 
 <header>Lista de Fichas</header>    
 
-    <!-- Vídeo de fundo -->
-    <video id="background" autoplay muted loop>
+    <video id="background-p3" class="background-video" autoplay muted loop>
         <source src="p3aindex.mp4" type="video/mp4">
         Seu navegador não suporta vídeo em HTML5.
     </video>
+    <video id="background-lofl" class="background-video" autoplay muted loop>
+        <source src="loflindex.mp4" type="video/mp4">
+        Seu navegador não suporta vídeo em HTML5.
+    </video>
 
-    <!-- Overlay escurecido -->
     <div class="overlay" id="overlay"></div>
 
-    <!-- Botão -->
-    <button class="botao" id="btn">Persona 3 —Alpha—</button>
+    <div class="button-container">
+        <button class="botao" id="btn-lofl">Legends of Legalya</button>
+        <button class="botao" id="btn-p3">Persona 3 —Alpha—</button>
+    </div>
 
     <script>
-        const botao = document.getElementById('btn');
-        const video = document.getElementById('background');
+        // Elementos visuais
         const overlay = document.getElementById('overlay');
+        const videoP3 = document.getElementById('background-p3');
+        const videoLofl = document.getElementById('background-lofl');
 
-        // Quando o mouse entra no botão
-        botao.addEventListener('mouseenter', () => {
-            video.style.opacity = '1';
-            overlay.style.opacity = '1'; // mostra o overlay junto
+        // Botões
+        const btnLofl = document.getElementById('btn-lofl');
+        const btnP3 = document.getElementById('btn-p3');
+
+        // Lógica para o botão de Legends of Legalya
+        btnLofl.addEventListener('mouseenter', () => {
+            videoLofl.style.opacity = '1';
+            overlay.style.opacity = '1';
+        });
+        btnLofl.addEventListener('mouseleave', () => {
+            videoLofl.style.opacity = '0';
+            overlay.style.opacity = '0';
         });
 
-        // Quando o mouse sai do botão
-        botao.addEventListener('mouseleave', () => {
-            video.style.opacity = '0';
-            overlay.style.opacity = '0'; // esconde o overlay
+        // Lógica para o botão de Persona 3
+        btnP3.addEventListener('mouseenter', () => {
+            videoP3.style.opacity = '1';
+            overlay.style.opacity = '1';
+        });
+        btnP3.addEventListener('mouseleave', () => {
+            videoP3.style.opacity = '0';
+            overlay.style.opacity = '0';
         });
 
-        // Quando o botão é clicado
-        botao.addEventListener('click', () => {
+
+        // Lógica dos cliques para navegar
+        btnLofl.addEventListener('click', () => {
+            window.location.href = 'loflficha.html'; 
+        });
+
+        btnP3.addEventListener('click', () => {
             window.location.href = 'fichap3a.html';
         });
     </script>
 </body>
 </html>
-
