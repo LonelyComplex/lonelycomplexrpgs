@@ -9,6 +9,8 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=MedievalSharp&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700&display=swap" rel="stylesheet">
+
 
     <style>
         /* ===== Reset básico ===== */
@@ -29,8 +31,8 @@
             position: relative;
         }
 
-        /* ===== Vídeos de fundo (AGORA UMA CLASSE) ===== */
-        .background-video {
+        /* ===== Vídeos e Imagem de fundo (CLASSE GENÉRICA) ===== */
+        .background-media {
             position: absolute;
             top: 0;
             left: 0;
@@ -40,6 +42,13 @@
             opacity: 0; /* começa invisível */
             transition: opacity 0.5s ease-in-out;
             z-index: 0; /* atrás de tudo */
+        }
+
+        /* Classe específica para a imagem de fundo */
+        #background-jinchuu {
+            background-image: url('jinchuuindex.png');
+            background-size: cover;
+            background-position: center;
         }
 
         /* ===== Overlay escurecido ===== */
@@ -75,23 +84,12 @@
             transition: all 0.3s;
             text-align: center;
         }
-
-        /* ===== Botão Persona 3 ===== */
-        #btn-p3 {
-            font-family: Arial, sans-serif;
-            background-color: #33333344;
-        }
-
-        #btn-p3:hover {
-            background-color: #007bffb4; /* azul */
-        }
-
+        
         /* ===== Botão Legends of Legalya ===== */
         #btn-lofl {
             font-family: 'MedievalSharp', cursive;
             background-color: transparent;
             color: #d4c3a3;
-            border: 2px solid #6b4f3a;
             font-size: 2.2rem;
         }
 
@@ -99,7 +97,29 @@
             background-color: rgba(107, 79, 58, 0.4);
             color: #fdf5e3;
         }
+        
+        /* ===== NOVO: Botão Lohain's Vengeance ===== */
+        #btn-jinchuu {
+            font-family: 'Cinzel Decorative', cursive;
+            background-color: transparent;
+            color: #808080;
+            font-size: 2.2rem;
+        }
 
+        #btn-jinchuu:hover {
+            background-color: #8c1818;
+            color: #fdf5e3;
+        }
+
+        /* ===== Botão Persona 3 ===== */
+        #btn-p3 {
+            font-family: Arial, sans-serif;
+            background-color: transparent;
+        }
+
+        #btn-p3:hover {
+            background-color: #007bffb4; /* azul */
+        }
 
         /* ===== Cabeçalho (Header) ===== */
         header {
@@ -121,19 +141,22 @@
 
 <header>Lista de Fichas</header>    
 
-    <video id="background-p3" class="background-video" autoplay muted loop>
+    <video id="background-p3" class="background-media" autoplay muted loop>
         <source src="p3aindex.mp4" type="video/mp4">
         Seu navegador não suporta vídeo em HTML5.
     </video>
-    <video id="background-lofl" class="background-video" autoplay muted loop>
+    <video id="background-lofl" class="background-media" autoplay muted loop>
         <source src="loflindex.mp4" type="video/mp4">
         Seu navegador não suporta vídeo em HTML5.
     </video>
+    <div id="background-jinchuu" class="background-media"></div>
+
 
     <div class="overlay" id="overlay"></div>
 
     <div class="button-container">
         <button class="botao" id="btn-lofl">Legends of Legalya</button>
+        <button class="botao" id="btn-jinchuu">Lohain's Vengeance</button>
         <button class="botao" id="btn-p3">Persona 3 —Alpha—</button>
     </div>
 
@@ -142,10 +165,14 @@
         const overlay = document.getElementById('overlay');
         const videoP3 = document.getElementById('background-p3');
         const videoLofl = document.getElementById('background-lofl');
+        // Elemento visual para o novo botão
+        const backgroundJinchuu = document.getElementById('background-jinchuu');
 
         // Botões
         const btnLofl = document.getElementById('btn-lofl');
         const btnP3 = document.getElementById('btn-p3');
+        // Novo botão
+        const btnJinchuu = document.getElementById('btn-jinchuu');
 
         // Lógica para o botão de Legends of Legalya
         btnLofl.addEventListener('mouseenter', () => {
@@ -154,6 +181,16 @@
         });
         btnLofl.addEventListener('mouseleave', () => {
             videoLofl.style.opacity = '0';
+            overlay.style.opacity = '0';
+        });
+
+        // Lógica para o novo botão de Lohain's Vengeance
+        btnJinchuu.addEventListener('mouseenter', () => {
+            backgroundJinchuu.style.opacity = '1';
+            overlay.style.opacity = '1';
+        });
+        btnJinchuu.addEventListener('mouseleave', () => {
+            backgroundJinchuu.style.opacity = '0';
             overlay.style.opacity = '0';
         });
 
@@ -171,6 +208,10 @@
         // Lógica dos cliques para navegar
         btnLofl.addEventListener('click', () => {
             window.location.href = 'loflficha.html'; 
+        });
+
+        btnJinchuu.addEventListener('click', () => {
+            window.location.href = 'jinchuuficha.html';
         });
 
         btnP3.addEventListener('click', () => {
